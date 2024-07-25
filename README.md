@@ -1,6 +1,8 @@
-# SwipeCardView Control for Xamarin.Forms
+# SwipeCardView Control for .NET MAUI
 
-[![NuGet](https://img.shields.io/nuget/v/MLToolkit.Forms.SwipeCardView.svg?label=NuGet)](https://www.nuget.org/packages/MLToolkit.Forms.SwipeCardView/)
+README is being worked on! Just as this project 😄
+
+<!--[![NuGet](https://img.shields.io/nuget/v/MLToolkit.Maui.SwipeCardView.svg?label=NuGet)](https://www.nuget.org/packages/MLToolkit.Maui.SwipeCardView/)
 
 SwipeCardView is a lightweight MVVM friendly UI control that brings Tinder-style swipeable cards into Xamarin.Forms applications. It supports swiping in all directions while providing constant dragging feedback, which enables awesome interactivity.
 
@@ -13,7 +15,7 @@ This netstandard2.0 library is intended for anyone who wants to build swipeable 
 
 ## Setup
 
-- Available on NuGet: [MLToolkit.Forms.SwipeCardView](https://www.nuget.org/packages/MLToolkit.Forms.SwipeCardView/)
+- Available on NuGet: [MLToolkit.Maui.SwipeCardView](https://www.nuget.org/packages/MLToolkit.Maui.SwipeCardView/)
 - Install into your PCL/.NET Standard project
 
 ## Features
@@ -90,17 +92,16 @@ The intention of this sample is to replicate Tinder UI.
 
 The intention of this page is to demonstrate the use of all the properties of SwipeCardView. All properties can be updated in runtime using the UI controls below:
 
-![SwipeCardView Android Simple Page](docs/images/SwipeCardView_Android_CustomizablePage.png)
+![SwipeCardView Android Simple Page](docs/images/SwipeCardView_Android_CustomizablePage.png)-->
 
-## Migration From SwipeCardView 1.x
+## Migration From SwipeCardView for Xamarin.Forms
 
 The migration should be fairly simple:
 
-- A breaking change is introducing SwipedCommand that takes SwipedCardEventArgs instead of SwipedLeftCommand and SwipedRightCommand. Make sure to replace those 2 handlers with the new one
-- Updating card background on dragging is removed in favor of Dragging command/event. If needed, the old behavior could be easily reproduced by utilizing Dragging event. Check ColorsPage for the implementation details.
-- Read [the full documentation](docs/index.md) to get yourself familiar with the new features
+- Breaking change from MLToolkit.Forms.SwipeCardView to Plugin.Maui.SwipeCardView
 
-## Other remarks
+## Acknowledgements
 
-- While developing SwipeCardView 2.0 I tried to follow [.NET standard library guidance](https://docs.microsoft.com/en-us/dotnet/standard/library-guidance/)
-- This library has nothing to do with Machine Learning. MLToolkit is just an unique prefix
+This project is forked from Marko Lazic's [MLToolkit.Forms.SwipeCardView project](https://github.com/markolazic88/SwipeCardView) and updated to be compatible with .NET MAUI.
+
+Thank you Marko for doing the initial work on this amazing control!

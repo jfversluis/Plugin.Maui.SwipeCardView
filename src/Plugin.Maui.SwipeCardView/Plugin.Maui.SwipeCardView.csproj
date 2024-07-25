@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <UseMaui>true</UseMaui>
+    <PackageId>Plugin.Maui.SwipeCardView</PackageId>
+    <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">1.0.0.0</Version>
+    <Version Condition=" '$(BUILD_BUILDNUMBER)' != '' ">$(BUILD_BUILDNUMBER)</Version>
+    <Authors>Marko Lazic</Authors>
+    <Owners>Marko Lazic</Owners>
+    <PackageProjectUrl>https://github.com/jfversluis/Plugin.Maui.SwipeCardView</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>xamarin xamarin.forms android ios swipe card view mltoolkit tinder</PackageTags>
+    <Description>SwipeCardView is a lightweight MVVM friendly user control that brings Tinder-style swipe card view into Xamarin.Forms applications.</Description>
+    <Copyright>Copyright 2020</Copyright>
+    <RepositoryUrl>https://github.com/jfversluis/Plugin.Maui.SwipeCardView</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/markolazic88/SwipeCardView/blob/master/docs/changelog.md</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.70" />
+  </ItemGroup>
+
+</Project>
