@@ -18,4 +18,9 @@ public partial class MainPage : ContentPage
 	{
 		Navigation.PushAsync(new TinderPage());
 	}
+
+	private void OnCustomizablePageClicked(object sender, EventArgs e)
+	{
+		Navigation.PushAsync(new CustomizablePage());
+	}
 }
