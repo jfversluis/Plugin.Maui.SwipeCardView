@@ -1,22 +1,24 @@
 # SwipeCardView Control for .NET MAUI
 
-README is being worked on! Just as this project 😄
+<!--[![NuGet](https://img.shields.io/nuget/v/MLToolkit.Maui.SwipeCardView.svg?label=NuGet)](https://www.nuget.org/packages/MLToolkit.Maui.SwipeCardView/)-->
 
-<!--[![NuGet](https://img.shields.io/nuget/v/MLToolkit.Maui.SwipeCardView.svg?label=NuGet)](https://www.nuget.org/packages/MLToolkit.Maui.SwipeCardView/)
+SwipeCardView is a lightweight MVVM friendly UI control that brings Tinder-style swipeable cards to .NET MAUI applications. It supports swiping in all directions while providing constant dragging feedback, which enables awesome interactivity.
 
-SwipeCardView is a lightweight MVVM friendly UI control that brings Tinder-style swipeable cards into Xamarin.Forms applications. It supports swiping in all directions while providing constant dragging feedback, which enables awesome interactivity.
+This library is intended for anyone who wants to build swipeable UI in C#. As it's built on top of .NET MAUI and uses no platform-specific code, it works on Android, iOS and any other supported platforms. If you are familiar with .NET MAUI `ListView`, `CollectionView` and `SwipeGestureRecognizer` interfaces, you will be able to utilize SwipeCardView with minimal effort. 
 
-This netstandard2.0 library is intended for anyone who wants to build swipeable UI in C#. As it's built on top of Xamarin.Forms, it works on Android, iOS and any other supported platform. If you are familiar with Xamarin.Forms ListView and SwipeGestureRecognizer interfaces, you will be able to utilize SwipeCardView with minimal effort. It's highly customizable too, by giving you options to set supported directions, back card scale, rotation angle etc.
+It's highly customizable too, by giving you options to set supported directions, back card scale, rotation angle etc.
+
+Have a look at the sample app in this repository, or screen recordings of the sample app below.
 
 ![SwipeCardView Android TinderPage Like](docs/images/SwipeCardView_Android_TinderPage_Like.gif)
 ![SwipeCardView Android TinderPage SuperLike](docs/images/SwipeCardView_Android_TinderPage_SuperLike.gif)
 ![SwipeCardView Android TinderPage Nope](docs/images/SwipeCardView_Android_TinderPage_Nope.gif)
 ![SwipeCardView Android TinderPage Down](docs/images/SwipeCardView_Android_TinderPage_Down.gif)
 
-## Setup
+<!--## Setup
 
-- Available on NuGet: [MLToolkit.Maui.SwipeCardView](https://www.nuget.org/packages/MLToolkit.Maui.SwipeCardView/)
-- Install into your PCL/.NET Standard project
+- Available on NuGet: [MLToolkit.Maui.SwipeCardView](https://www.nuget.org/packages/Plugin.Maui.SwipeCardView/)
+- Install into your PCL/.NET Standard project-->
 
 ## Features
 
@@ -25,15 +27,15 @@ This netstandard2.0 library is intended for anyone who wants to build swipeable 
 - Adjustability – Customize the behavior of SwipeCardView. Set card rotation, animation length, back card scale etc.
 - Interactivity – Respond to dragging and swipe gestures using events or commands
 
-For more info about the features check out [the full documentation](docs/index.md).
+<!--For more info about the features check out [the full documentation](docs/index.md).-->
 
-## API
+<!--## API
 
 [SwipeCardView API](docs/api.md)
 
 ## Changelog
 
-[Change Log - February 2020](docs/changelog.md)
+[Change Log - February 2020](docs/changelog.md)-->
 
 ## Samples
 
