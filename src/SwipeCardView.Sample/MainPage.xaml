@@ -11,6 +11,7 @@
         <Button Text="Simple Page" Clicked="OnSimplePageClicked" />
         <Button Text="Tinder Page" Clicked="OnTinderPageClicked" />
         <Button Text="Customizable Page" Clicked="OnCustomizablePageClicked" />
+        <Button Text="Colors Page" Clicked="OnColorsPageClicked" />
     </VerticalStackLayout>
 
 </ContentPage>

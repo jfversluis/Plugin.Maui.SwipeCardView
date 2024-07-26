@@ -23,4 +23,9 @@ public partial class MainPage : ContentPage
 	{
 		Navigation.PushAsync(new CustomizablePage());
 	}
+
+	private void OnColorsPageClicked(object sender, EventArgs e)
+	{
+		Navigation.PushAsync(new ColorsPage());
+	}
 }

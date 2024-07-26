@@ -104,4 +104,4 @@ The migration should be fairly simple:
 
 This project is forked from Marko Lazic's [MLToolkit.Forms.SwipeCardView project](https://github.com/markolazic88/SwipeCardView) and updated to be compatible with .NET MAUI.
 
-Thank you Marko for doing the initial work on this amazing control!
+Thank you Marko and contributors for doing the initial work on this amazing control!
