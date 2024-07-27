@@ -38,7 +38,7 @@ For more info about the features check out [the full documentation](docs/index.m
 
 ## Changelog
 
-[Change Log - February 2020](docs/changelog.md)
+[See Change Log](docs/changelog.md)
 
 ## Samples
 
