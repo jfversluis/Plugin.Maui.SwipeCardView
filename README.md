@@ -1,6 +1,8 @@
+![](nuget.png)
+
 # SwipeCardView Control for .NET MAUI
 
-<!--[![NuGet](https://img.shields.io/nuget/v/MLToolkit.Maui.SwipeCardView.svg?label=NuGet)](https://www.nuget.org/packages/MLToolkit.Maui.SwipeCardView/)-->
+<!--[![NuGet](https://img.shields.io/nuget/v/Plugin.Maui.SwipeCardView.svg?label=NuGet)](https://www.nuget.org/packages/Plugin.Maui.SwipeCardView/)-->
 
 SwipeCardView is a lightweight MVVM friendly UI control that brings Tinder-style swipeable cards to .NET MAUI applications. It supports swiping in all directions while providing constant dragging feedback, which enables awesome interactivity.
 
@@ -104,6 +106,14 @@ The migration should be fairly simple:
 
 ## Acknowledgements
 
+### Original Project MLToolkit.Forms.SwipeCardView
+
 This project is forked from Marko Lazic's [MLToolkit.Forms.SwipeCardView project](https://github.com/markolazic88/SwipeCardView) and updated to be compatible with .NET MAUI.
 
 Thank you Marko and contributors for doing the initial work on this amazing control!
+
+### Icon
+
+Although I used a [CC0 License](https://choosealicense.com/licenses/cc0-1.0/) icon, I still want to be transparent about where I got them and who made them. Credit where credit is due!
+
+* Swipe library icon: https://www.svgrepo.com/svg/409928/swipe-left
