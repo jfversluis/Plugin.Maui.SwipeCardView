@@ -58,12 +58,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="../Plugin.Maui.SwipeCardView/Plugin.Maui.SwipeCardView.csproj" />
+	  <ProjectReference Include="../../src/Plugin.Maui.SwipeCardView/Plugin.Maui.SwipeCardView.csproj" />
 	</ItemGroup>
 
 </Project>
