@@ -1,6 +1,6 @@
 # SwipeCardView API
 
-SwipeCardView inherits from `Xamarin.Forms.ContentView`.
+SwipeCardView inherits from `Microsoft.Maui.Controls.ContentView`.
 
 ## Properties
 
@@ -14,7 +14,7 @@ CardRotation | `float` | 20 | Rotation adjuster in degrees for dragging to left 
 DraggingCommand | `System.Windows.Input.ICommand`  | null | Gets or sets the command to run when a dragging gesture is recognized
 DraggingCommandParameter | `System.Object` | null | Gets or sets the parameter to pass to commands that take one
 ItemsSource | `System.Collections.IList` | null | Gets or sets the source of items to template and display
-ItemTemplate | `Xamarin.Forms.DataTemplate` | null | Gets or sets the DataTemplate to apply to the ItemsSource
+ItemTemplate | `Microsoft.Maui.Controls.DataTemplate` | null | Gets or sets the DataTemplate to apply to the ItemsSource
 SupportedDraggingDirections | `SwipeCardDirection` | Left, Right, Up, Down | Gets or sets supported dragging direction of the top card. User may want to support dragging in all 4 directions but to support swipe movement only in a subset. For example, Tinder support dragging in all 4 directions, but has no swipe down.
 SupportedSwipeDirections | `SwipeCardDirection` | Left, Right, Up, Down | Gets or sets direction in which top card could be swiped. User may want to support dragging in all 4 directions but to support swipe movement only in a subset. For example, Tinder support dragging in all 4 directions, but has no swipe down.
 SwipeCommand | `System.Windows.Input.ICommand`  | null | Gets or sets the command to run when a swipe gesture is recognized
@@ -75,7 +75,7 @@ System.TimeSpan | endDelay | End delay. It should be a positive number (i.e. 200
 
 Enumerates swipe directions.
 
-This enumeration has a [FlagsAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.flagsattribute) attribute that allows a bitwise combination of its member values.
+This enumeration has a [FlagsAttribute](https://learn.microsoft.com/dotnet/api/system.flagsattribute) attribute that allows a bitwise combination of its member values.
 
 Name | Value | Description
 --- | --- | ---
@@ -89,7 +89,7 @@ Down | 8 | Indicates a downward swipe
 
 Enumerates dragging directions.
 
-This enumeration has a [FlagsAttribute](https://docs.microsoft.com/en-us/dotnet/api/system.flagsattribute) attribute that allows a bitwise combination of its member values.
+This enumeration has a [FlagsAttribute](https://learn.microsoft.com/dotnet/api/system.flagsattribute) attribute that allows a bitwise combination of its member values.
 
 Name | Value | Description
 --- | --- | ---
