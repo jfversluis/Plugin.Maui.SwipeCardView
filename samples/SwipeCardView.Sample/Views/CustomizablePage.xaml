@@ -3,6 +3,8 @@
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
              xmlns:local="clr-namespace:SwipeCardView.Sample"
              x:Class="SwipeCardView.Sample.Views.CustomizablePage"
+             Shell.BackgroundColor="{x:StaticResource Primary}"
+             Shell.TitleColor="{x:StaticResource White}"
              Title="Customizable Page">
 
     <StackLayout Padding="10">

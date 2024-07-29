@@ -4,8 +4,10 @@
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
              x:Class="SwipeCardView.Sample.Views.TinderPage"
              BackgroundColor="#EEE"
+             Shell.BackgroundColor="{x:StaticResource Primary}"
+             Shell.TitleColor="{x:StaticResource White}"
              Title ="Tinder">
-    <ContentPage.Content>
+
         <StackLayout>
             <swipeCardView:SwipeCardView
                 x:Name="SwipeCardView"
@@ -52,7 +54,7 @@
                     </DataTemplate>
                 </swipeCardView:SwipeCardView.ItemTemplate>
             </swipeCardView:SwipeCardView>
-            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Padding="10, 10, 10, 20" Spacing="30">
+            <HorizontalStackLayout HorizontalOptions="Center" Padding="10, 10, 10, 20" Spacing="30">
                 <StackLayout>
                     <Button x:Name="nopeButton" ImageSource="ic_tinder_nope.png" Clicked="OnDislikeClicked" WidthRequest="60" HeightRequest="60" CornerRadius="30" BackgroundColor="White" Scale="1"></Button>
                 </StackLayout>
@@ -62,7 +64,7 @@
                 <StackLayout>
                     <Button x:Name="likeButton" ImageSource="ic_tinder_like.png" Clicked="OnLikeClicked" WidthRequest="60" HeightRequest="60" CornerRadius="30" BackgroundColor="White" Scale="1"></Button>
                 </StackLayout>
-            </StackLayout>
+            </HorizontalStackLayout>
         </StackLayout>
-    </ContentPage.Content>
+
 </ContentPage>

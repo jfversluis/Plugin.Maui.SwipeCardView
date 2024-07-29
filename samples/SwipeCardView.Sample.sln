@@ -3,20 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwipeCardView.Sample", "SwipeCardView.Sample\SwipeCardView.Sample.csproj", "{FFFB25DF-5B56-456D-A43D-21A12DEB266B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SwipeCardView.Sample", "SwipeCardView.Sample\SwipeCardView.Sample.csproj", "{FFFB25DF-5B56-456D-A43D-21A12DEB266B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Plugin.Maui.SwipeCardView", "..\src\Plugin.Maui.SwipeCardView\Plugin.Maui.SwipeCardView.csproj", "{02605263-CEB5-4A54-BFF1-1ABD22AEACBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{FFFB25DF-5B56-456D-A43D-21A12DEB266B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FFFB25DF-5B56-456D-A43D-21A12DEB266B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFFB25DF-5B56-456D-A43D-21A12DEB266B}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{FFFB25DF-5B56-456D-A43D-21A12DEB266B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFFB25DF-5B56-456D-A43D-21A12DEB266B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02605263-CEB5-4A54-BFF1-1ABD22AEACBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02605263-CEB5-4A54-BFF1-1ABD22AEACBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02605263-CEB5-4A54-BFF1-1ABD22AEACBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02605263-CEB5-4A54-BFF1-1ABD22AEACBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EC90BD18-ECDF-4F96-AFEF-248CF30B4FB7}
 	EndGlobalSection
 EndGlobal

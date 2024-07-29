@@ -3,8 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
              x:Class="SwipeCardView.Sample.Views.ColorsPage"
+             Shell.BackgroundColor="{x:StaticResource Primary}"
+             Shell.TitleColor="{x:StaticResource White}"
              Title="Colors Page">
-    <ContentPage.Content>
+
         <StackLayout Padding="10">
             <swipeCardView:SwipeCardView
                 x:Name="SwipeCardView"
@@ -32,5 +34,5 @@
                 <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
             </StackLayout>
         </StackLayout>
-    </ContentPage.Content>
+
 </ContentPage>

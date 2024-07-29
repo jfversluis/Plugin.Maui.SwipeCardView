@@ -2,29 +2,29 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
+             Shell.BackgroundColor="{x:StaticResource Primary}"
+             Shell.TitleColor="{x:StaticResource White}"
              x:Class="SwipeCardView.Sample.Views.SimplePage">
 
-    <ContentPage.Content>
-        <StackLayout Padding="10">
-            <swipeCardView:SwipeCardView
+    <StackLayout Padding="10">
+        <swipeCardView:SwipeCardView
                 ItemsSource="{Binding CardItems}"
                 SwipedCommand="{Binding SwipedCommand}"
                 LoopCards="{Binding IsLoopCards}"
                 VerticalOptions="FillAndExpand">
-                <swipeCardView:SwipeCardView.ItemTemplate>
-                    <DataTemplate>
-                        <Label Text="{Binding .}" FontSize="Large" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" BackgroundColor="Beige" />
-                    </DataTemplate>
-                </swipeCardView:SwipeCardView.ItemTemplate>
-            </swipeCardView:SwipeCardView>
-            <Label Text="{Binding Message}" HorizontalOptions="CenterAndExpand" />
-            <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
-                <Label Text="Loop Cards" />
-                <Switch IsToggled="{Binding IsLoopCards}"  />
-            </StackLayout>
-            <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
-            <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
+            <swipeCardView:SwipeCardView.ItemTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding .}" FontSize="Large" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" BackgroundColor="Beige" />
+                </DataTemplate>
+            </swipeCardView:SwipeCardView.ItemTemplate>
+        </swipeCardView:SwipeCardView>
+        <Label Text="{Binding Message}" HorizontalOptions="CenterAndExpand" />
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
+            <Label Text="Loop Cards" />
+            <Switch IsToggled="{Binding IsLoopCards}"  />
         </StackLayout>
-    </ContentPage.Content>
+        <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
+        <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
+    </StackLayout>
 
 </ContentPage>
