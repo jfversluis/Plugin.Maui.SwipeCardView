@@ -1,18 +1,15 @@
-﻿using Plugin.Maui.SwipeCardView.Core;
-using System;
+﻿using Microsoft.Maui.Controls.Compatibility;
+using Plugin.Maui.SwipeCardView.Core;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui;
 
 namespace Plugin.Maui.SwipeCardView;
 
 public class SwipeCardView : ContentView, IDisposable
 {
+    #region Bindable Properties
     public static readonly BindableProperty ItemsSourceProperty =
         BindableProperty.Create(
             nameof(ItemsSource),
@@ -118,6 +115,9 @@ public class SwipeCardView : ContentView, IDisposable
             typeof(SwipeCardView),
             DefaultLoopCards);
 
+    #endregion
+
+    #region Constants
     private const uint DefaultThreshold = 100;
 
     private const SwipeCardDirection DefaultSupportedSwipeDirections = SwipeCardDirection.Left | SwipeCardDirection.Right | SwipeCardDirection.Up | SwipeCardDirection.Down;
@@ -138,6 +138,9 @@ public class SwipeCardView : ContentView, IDisposable
     private const uint InvokeSwipeDefaultTouchDifference = 10;
     private const uint InvokeSwipeDefaultTouchDelay = 1;
     private const uint InvokeSwipeDefaultEndDelay = 200;
+    #endregion
+
+    #region Private fields
 
     private readonly View[] _cards = new View[NumCards];
 
@@ -150,6 +153,7 @@ public class SwipeCardView : ContentView, IDisposable
     private int _itemIndex = 0; // The last items index added to the stack of the cards
 
     private bool _ignoreTouch = false;
+    #endregion
 
     public SwipeCardView()
     {
@@ -160,30 +164,9 @@ public class SwipeCardView : ContentView, IDisposable
         var panGesture = new PanGestureRecognizer();
         panGesture.PanUpdated += OnPanUpdated;
         GestureRecognizers.Add(panGesture);
-
-        DraggingCardPosition = DraggingCardPosition.Start;
     }
 
-    public void Dispose()
-    {
-        foreach (var card in _cards)
-        {
-            if (card != null)
-                Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
-        }
-
-        GestureRecognizers.Clear();
-
-        if (this.ItemsSource != null)
-        {
-            var observable = this.ItemsSource as INotifyCollectionChanged;
-            if (observable != null)
-            {
-                observable.CollectionChanged -= this.OnItemSourceCollectionChanged;
-            }
-        }
-    }
-
+    #region Public Properties
     public event EventHandler<SwipedCardEventArgs> Swiped;
 
     public event EventHandler<DraggingCardEventArgs> Dragging;
@@ -279,7 +262,28 @@ public class SwipeCardView : ContentView, IDisposable
         set => SetValue(LoopCardsProperty, value);
     }
 
-    private DraggingCardPosition DraggingCardPosition { get; set; }
+    #endregion
+
+    #region Public Methods
+    public void Dispose()
+    {
+        foreach (var card in _cards)
+        {
+            if (card != null)
+                Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
+        }
+
+        GestureRecognizers.Clear();
+
+        if (ItemsSource != null)
+        {
+            var observable = ItemsSource as INotifyCollectionChanged;
+            if (observable != null)
+            {
+                observable.CollectionChanged -= OnItemSourceCollectionChanged;
+            }
+        }
+    }
 
     /// <summary>
     /// Simulates PanGesture movement to left or right
@@ -344,7 +348,9 @@ public class SwipeCardView : ContentView, IDisposable
 
         HandleTouchEnd();
     }
+    #endregion
 
+    #region Event Handlers
     private static void OnItemTemplatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var swipeCardView = (SwipeCardView)bindable;
@@ -426,6 +432,32 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
+    private void OnPanUpdated(object sender, PanUpdatedEventArgs e)
+    {
+        if (ItemsSource == null || ItemsSource.Count == 0)
+        {
+            return;
+        }
+
+        switch (e.StatusType)
+        {
+            case GestureStatus.Started:
+                HandleTouchStart();
+                break;
+
+            case GestureStatus.Running:
+                HandleTouch((float)e.TotalX, (float)e.TotalY);
+                break;
+
+            case GestureStatus.Completed:
+                HandleTouchEnd();
+                break;
+        }
+    }
+
+    #endregion
+
+    #region Private Methods
     private void Setup()
     {
         if (ItemsSource == null)
@@ -468,30 +500,7 @@ public class SwipeCardView : ContentView, IDisposable
         }
         Content.IsVisible = wasVisible;
     }
-
-    private void OnPanUpdated(object sender, PanUpdatedEventArgs e)
-    {
-        if (ItemsSource == null || ItemsSource.Count == 0)
-        {
-            return;
-        }
-
-        switch (e.StatusType)
-        {
-            case GestureStatus.Started:
-                HandleTouchStart();
-                break;
-
-            case GestureStatus.Running:
-                HandleTouch((float)e.TotalX, (float)e.TotalY);
-                break;
-
-            case GestureStatus.Completed:
-                HandleTouchEnd();
-                break;
-        }
-    }
-
+    
     // Handle when a touch event begins
     private void HandleTouchStart()
     {
@@ -721,32 +730,5 @@ public class SwipeCardView : ContentView, IDisposable
 
         Dragging?.Invoke(sender, new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY));
     }
-}
-
-internal static class SwipeCardDirectionExtensions
-{
-    public static bool IsLeft(this SwipeCardDirection self)
-    {
-        return (self & SwipeCardDirection.Left) == SwipeCardDirection.Left;
-    }
-
-    public static bool IsRight(this SwipeCardDirection self)
-    {
-        return (self & SwipeCardDirection.Right) == SwipeCardDirection.Right;
-    }
-
-    public static bool IsUp(this SwipeCardDirection self)
-    {
-        return (self & SwipeCardDirection.Up) == SwipeCardDirection.Up;
-    }
-
-    public static bool IsDown(this SwipeCardDirection self)
-    {
-        return (self & SwipeCardDirection.Down) == SwipeCardDirection.Down;
-    }
-
-    public static bool IsSupported(this SwipeCardDirection self, SwipeCardDirection other)
-    {
-        return (self & other) == other;
-    }
+    #endregion
 }
