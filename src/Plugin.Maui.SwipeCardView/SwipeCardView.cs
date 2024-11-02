@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls.Compatibility;
-using Plugin.Maui.SwipeCardView.Core;
+﻿using Plugin.Maui.SwipeCardView.Core;
 using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -157,7 +156,7 @@ public class SwipeCardView : ContentView, IDisposable
 
     public SwipeCardView()
     {
-        var view = new RelativeLayout();
+        var view = new Grid();
 
         Content = view;
 
@@ -362,10 +361,10 @@ public class SwipeCardView : ContentView, IDisposable
 
         swipeCardView.Content = null;
 
-        var view = new RelativeLayout();
+        var view = new Grid();
 
         // create a stack of cards
-        for (var i = 0; i < NumCards; i++)
+        for (var i = NumCards-1; i >= 0; i--)
         {
             var content = swipeCardView.ItemTemplate.CreateContent();
             if (!(content is View) && !(content is ViewCell))
@@ -379,12 +378,7 @@ public class SwipeCardView : ContentView, IDisposable
             card.IsVisible = false;
             Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
 
-            view.Children.Add(
-                card,
-                Constraint.Constant(0),
-                Constraint.Constant(0),
-                Constraint.RelativeToParent(parent => parent.Width),
-                Constraint.RelativeToParent(parent => parent.Height));
+            view.Children.Add(card);
         }
 
         swipeCardView.Content = view;
@@ -494,7 +488,8 @@ public class SwipeCardView : ContentView, IDisposable
             card.Rotation = 0;
             card.TranslationX = 0;
             card.TranslationY = -card.Y;
-            ((RelativeLayout)Content).LowerChild(card);
+            var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
+            card.ZIndex = minZIndex - 1;
             card.IsVisible = true;
             _itemIndex++;
         }
@@ -665,7 +660,8 @@ public class SwipeCardView : ContentView, IDisposable
         if (_itemIndex < ItemsSource.Count)
         {
             // Push it to the back z order
-            ((RelativeLayout)Content).LowerChild(topCard);
+            var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
+            topCard.ZIndex = minZIndex -1;
 
             try
             {
