@@ -25,7 +25,7 @@
             LoopCards="{Binding IsLoopCards}">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
-                    <Frame CornerRadius="10" Padding="0" BorderColor="Orange" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="Beige">
+                    <Frame CornerRadius="10" Padding="0" BorderColor="Orange" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="Beige" InputTransparent="True">
                         <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                             <Label Text="{Binding .}" FontSize="Large" />
                             <Label x:Name="DirectionLabel" />

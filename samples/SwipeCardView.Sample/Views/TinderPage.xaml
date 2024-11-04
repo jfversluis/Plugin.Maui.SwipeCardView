@@ -24,7 +24,7 @@
                 <swipeCardView:SwipeCardView.ItemTemplate>
                     <DataTemplate>
                         <StackLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                            <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                            <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" InputTransparent="True">
                                 <AbsoluteLayout>
                                     <Image Source="{Binding Photo}" Aspect="AspectFill"  AbsoluteLayout.LayoutBounds=".5,0.5,1,1" AbsoluteLayout.LayoutFlags="All" />
                                     <Frame x:Name="LikeFrame"  BorderColor="#63DD99" BackgroundColor="Transparent" Padding="0" CornerRadius="20" AbsoluteLayout.LayoutBounds="0.1,.1, 150, 50"

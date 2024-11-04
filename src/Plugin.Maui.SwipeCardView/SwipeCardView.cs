@@ -9,6 +9,7 @@ namespace Plugin.Maui.SwipeCardView;
 public class SwipeCardView : ContentView, IDisposable
 {
     #region Bindable Properties
+
     public static readonly BindableProperty ItemsSourceProperty =
         BindableProperty.Create(
             nameof(ItemsSource),
@@ -114,9 +115,10 @@ public class SwipeCardView : ContentView, IDisposable
             typeof(SwipeCardView),
             DefaultLoopCards);
 
-    #endregion
+    #endregion Bindable Properties
 
     #region Constants
+
     private const uint DefaultThreshold = 100;
 
     private const SwipeCardDirection DefaultSupportedSwipeDirections = SwipeCardDirection.Left | SwipeCardDirection.Right | SwipeCardDirection.Up | SwipeCardDirection.Down;
@@ -137,7 +139,8 @@ public class SwipeCardView : ContentView, IDisposable
     private const uint InvokeSwipeDefaultTouchDifference = 10;
     private const uint InvokeSwipeDefaultTouchDelay = 1;
     private const uint InvokeSwipeDefaultEndDelay = 200;
-    #endregion
+
+    #endregion Constants
 
     #region Private fields
 
@@ -152,7 +155,8 @@ public class SwipeCardView : ContentView, IDisposable
     private int _itemIndex = 0; // The last items index added to the stack of the cards
 
     private bool _ignoreTouch = false;
-    #endregion
+
+    #endregion Private fields
 
     public SwipeCardView()
     {
@@ -166,6 +170,7 @@ public class SwipeCardView : ContentView, IDisposable
     }
 
     #region Public Properties
+
     public event EventHandler<SwipedCardEventArgs> Swiped;
 
     public event EventHandler<DraggingCardEventArgs> Dragging;
@@ -261,9 +266,10 @@ public class SwipeCardView : ContentView, IDisposable
         set => SetValue(LoopCardsProperty, value);
     }
 
-    #endregion
+    #endregion Public Properties
 
     #region Public Methods
+
     public void Dispose()
     {
         foreach (var card in _cards)
@@ -347,9 +353,11 @@ public class SwipeCardView : ContentView, IDisposable
 
         HandleTouchEnd();
     }
-    #endregion
+
+    #endregion Public Methods
 
     #region Event Handlers
+
     private static void OnItemTemplatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var swipeCardView = (SwipeCardView)bindable;
@@ -364,7 +372,7 @@ public class SwipeCardView : ContentView, IDisposable
         var view = new Grid();
 
         // create a stack of cards
-        for (var i = NumCards-1; i >= 0; i--)
+        for (var i = NumCards - 1; i >= 0; i--)
         {
             var content = swipeCardView.ItemTemplate.CreateContent();
             if (!(content is View) && !(content is ViewCell))
@@ -449,9 +457,10 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
-    #endregion
+    #endregion Event Handlers
 
     #region Private Methods
+
     private void Setup()
     {
         if (ItemsSource == null)
@@ -495,7 +504,7 @@ public class SwipeCardView : ContentView, IDisposable
         }
         Content.IsVisible = wasVisible;
     }
-    
+
     // Handle when a touch event begins
     private void HandleTouchStart()
     {
@@ -651,17 +660,16 @@ public class SwipeCardView : ContentView, IDisposable
             TopItem = ItemsSource.Count > 0 ? ItemsSource[_itemIndex] : null;
         }
 
-
         var topCard = _cards[_topCardIndex];
         _topCardIndex = NextCardIndex(_topCardIndex);
 
-        // If there are more cards to show, show the next card in the place of 
+        // If there are more cards to show, show the next card in the place of
         // the card that was swiped off the screen
         if (_itemIndex < ItemsSource.Count)
         {
             // Push it to the back z order
             var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
-            topCard.ZIndex = minZIndex -1;
+            topCard.ZIndex = minZIndex - 1;
 
             try
             {
@@ -726,5 +734,6 @@ public class SwipeCardView : ContentView, IDisposable
 
         Dragging?.Invoke(sender, new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY));
     }
-    #endregion
+
+    #endregion Private Methods
 }
