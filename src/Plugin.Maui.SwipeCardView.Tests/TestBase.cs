@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,7 +17,7 @@ public abstract class TestBase
         _defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
         //Device.PlatformServices = new MockPlatformServices();
 
-        MauiApp.CreateBuilder().UseMauiCompatibility().Build();
+        MauiApp.CreateBuilder().Build();
     }
 
     [TestCleanup]
