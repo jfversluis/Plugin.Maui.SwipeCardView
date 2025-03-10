@@ -18,7 +18,7 @@
                 Threshold="100">
                 <swipeCardView:SwipeCardView.ItemTemplate>
                     <DataTemplate>
-                        <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" InputTransparent="True">
                             <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                                 <Label Text="{Binding .}" FontSize="Large" />
                                 <Label x:Name="DirectionLabel" />
