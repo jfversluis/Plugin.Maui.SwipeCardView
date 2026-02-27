@@ -156,6 +156,8 @@ public class SwipeCardView : ContentView, IDisposable
 
     private bool _ignoreTouch = false;
 
+    private bool _disposed = false;
+
     #endregion Private fields
 
     public SwipeCardView()
@@ -171,9 +173,9 @@ public class SwipeCardView : ContentView, IDisposable
 
     #region Public Properties
 
-    public event EventHandler<SwipedCardEventArgs> Swiped;
+    public event EventHandler<SwipedCardEventArgs>? Swiped;
 
-    public event EventHandler<DraggingCardEventArgs> Dragging;
+    public event EventHandler<DraggingCardEventArgs>? Dragging;
 
     public IList ItemsSource
     {
@@ -187,9 +189,9 @@ public class SwipeCardView : ContentView, IDisposable
         set => SetValue(ItemTemplateProperty, value);
     }
 
-    public object TopItem
+    public object? TopItem
     {
-        get => (object)GetValue(TopItemProperty);
+        get => GetValue(TopItemProperty);
         set => SetValue(TopItemProperty, value);
     }
 
@@ -272,21 +274,30 @@ public class SwipeCardView : ContentView, IDisposable
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
         foreach (var card in _cards)
         {
             if (card != null)
                 Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
         }
 
+        var panGesture = GestureRecognizers.OfType<PanGestureRecognizer>().FirstOrDefault();
+        if (panGesture != null)
+        {
+            panGesture.PanUpdated -= OnPanUpdated;
+        }
+
         GestureRecognizers.Clear();
 
-        if (ItemsSource != null)
+        if (ItemsSource is INotifyCollectionChanged observable)
         {
-            var observable = ItemsSource as INotifyCollectionChanged;
-            if (observable != null)
-            {
-                observable.CollectionChanged -= OnItemSourceCollectionChanged;
-            }
+            observable.CollectionChanged -= OnItemSourceCollectionChanged;
         }
     }
 
@@ -351,7 +362,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         await Task.Delay(endDelay);
 
-        HandleTouchEnd();
+        await HandleTouchEnd();
     }
 
     #endregion Public Methods
@@ -380,7 +391,7 @@ public class SwipeCardView : ContentView, IDisposable
                 throw new Exception($"Invalid visual object {nameof(content)}");
             }
 
-            var card = content is View ? content as View : ((ViewCell)content).View;
+            var card = content is View view1 ? view1 : ((ViewCell)content).View;
 
             swipeCardView._cards[i] = card;
             card.IsVisible = false;
@@ -390,6 +401,13 @@ public class SwipeCardView : ContentView, IDisposable
         }
 
         swipeCardView.Content = view;
+
+        // If ItemsSource was already set before the template, initialize the cards now
+        if (swipeCardView.ItemsSource != null && swipeCardView.ItemsSource.Count > 0)
+        {
+            swipeCardView._itemIndex = 0;
+            swipeCardView.Setup();
+        }
     }
 
     private static void OnItemsSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -410,21 +428,33 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
-    private void OnItemSourceCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    private void OnItemSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             _itemIndex = 0;
+
+            // Cancel any running animations before resetting
             foreach (var card in _cards)
             {
                 if (card != null)
+                {
+                    Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
                     card.IsVisible = false;
+                }
             }
 
+            _ignoreTouch = false;
             TopItem = null;
             if (ItemsSource.Count > 0)
                 Setup();
 
+            return;
+        }
+
+        // Guard against null cards (ItemTemplate not yet set)
+        if (_cards[0] == null || _cards[1] == null)
+        {
             return;
         }
 
@@ -434,7 +464,7 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
-    private void OnPanUpdated(object sender, PanUpdatedEventArgs e)
+    private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
         if (ItemsSource == null || ItemsSource.Count == 0)
         {
@@ -452,7 +482,7 @@ public class SwipeCardView : ContentView, IDisposable
                 break;
 
             case GestureStatus.Completed:
-                HandleTouchEnd();
+                _ = HandleTouchEnd();
                 break;
         }
     }
@@ -464,6 +494,12 @@ public class SwipeCardView : ContentView, IDisposable
     private void Setup()
     {
         if (ItemsSource == null)
+        {
+            return;
+        }
+
+        // Guard: cards are not yet created (ItemTemplate not set)
+        if (_cards[0] == null || _cards[1] == null)
         {
             return;
         }
@@ -508,9 +544,19 @@ public class SwipeCardView : ContentView, IDisposable
     // Handle when a touch event begins
     private void HandleTouchStart()
     {
+        if (_ignoreTouch)
+        {
+            return;
+        }
+
+        var topCard = _cards[_topCardIndex];
+        if (topCard == null)
+        {
+            return;
+        }
+
         _cardDistanceX = 0;
         _cardDistanceY = 0;
-        var topCard = _cards[_topCardIndex];
         SendDragging(topCard, SwipeCardDirection.None, DraggingCardPosition.Start, 0, 0);
     }
 
@@ -529,7 +575,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (topCard != null && topCard.IsVisible)
         {
             // Move the card
-            if (differenceX > 0 && SupportedDraggingDirections.IsRight() || differenceX < 0 && SupportedDraggingDirections.IsLeft())
+            if ((differenceX > 0 && SupportedDraggingDirections.IsRight()) || (differenceX < 0 && SupportedDraggingDirections.IsLeft()))
             {
                 topCard.TranslationX = differenceX;
 
@@ -538,7 +584,7 @@ public class SwipeCardView : ContentView, IDisposable
                 topCard.Rotation = rotationAngle;
             }
 
-            if (differenceY > 0 && SupportedDraggingDirections.IsDown() || differenceY < 0 && SupportedDraggingDirections.IsUp())
+            if ((differenceY > 0 && SupportedDraggingDirections.IsDown()) || (differenceY < 0 && SupportedDraggingDirections.IsUp()))
             {
                 topCard.TranslationY = differenceY;
             }
@@ -575,70 +621,98 @@ public class SwipeCardView : ContentView, IDisposable
     }
 
     // Handle the end of the touch event
-    private async void HandleTouchEnd()
+    private async Task HandleTouchEnd()
     {
+        if (_ignoreTouch)
+        {
+            return;
+        }
+
         _ignoreTouch = true;
 
         var topCard = _cards[_topCardIndex];
         if (topCard == null)
         {
+            _ignoreTouch = false;
             return;
         }
 
-        SwipeCardDirection direction;
-        DraggingCardPosition position;
-        if (Math.Abs(_cardDistanceX) > Math.Abs(_cardDistanceY))
+        try
         {
-            direction = _cardDistanceX > 0 ? SwipeCardDirection.Right : SwipeCardDirection.Left;
-            position = Math.Abs(_cardDistanceX) > Threshold ? DraggingCardPosition.FinishedOverThreshold : DraggingCardPosition.FinishedUnderThreshold;
-        }
-        else
-        {
-            direction = _cardDistanceY > 0 ? SwipeCardDirection.Down : SwipeCardDirection.Up;
-            position = Math.Abs(_cardDistanceY) > Threshold ? DraggingCardPosition.FinishedOverThreshold : DraggingCardPosition.FinishedUnderThreshold;
-        }
-
-        if (SupportedDraggingDirections.IsSupported(direction))
-        {
-            SendDragging(topCard, direction, position, _cardDistanceX, _cardDistanceY);
-        }
-
-        if (position == DraggingCardPosition.FinishedOverThreshold && SupportedSwipeDirections.IsSupported(direction))
-        {
-            // Move the top card off the screen
-            if (direction.IsLeft() || direction.IsRight())
+            SwipeCardDirection direction;
+            DraggingCardPosition position;
+            if (Math.Abs(_cardDistanceX) > Math.Abs(_cardDistanceY))
             {
-                await topCard.TranslateTo(_cardDistanceX > 0 ? Width : -Width, 0, AnimationLength / 2, Easing.SpringOut);
+                direction = _cardDistanceX > 0 ? SwipeCardDirection.Right : SwipeCardDirection.Left;
+                position = Math.Abs(_cardDistanceX) > Threshold ? DraggingCardPosition.FinishedOverThreshold : DraggingCardPosition.FinishedUnderThreshold;
             }
             else
             {
-                await topCard.TranslateTo(0, _cardDistanceY > 0 ? Height : -Height, AnimationLength / 2, Easing.SpringOut);
+                direction = _cardDistanceY > 0 ? SwipeCardDirection.Down : SwipeCardDirection.Up;
+                position = Math.Abs(_cardDistanceY) > Threshold ? DraggingCardPosition.FinishedOverThreshold : DraggingCardPosition.FinishedUnderThreshold;
             }
 
-            topCard.IsVisible = false;
+            if (SupportedDraggingDirections.IsSupported(direction))
+            {
+                SendDragging(topCard, direction, position, _cardDistanceX, _cardDistanceY);
+            }
 
-            topCard.Scale = 0.0;
-            topCard.Rotation = 0;
-            topCard.TranslationX = 0;
-            topCard.TranslationY = -topCard.Y;
+            if (position == DraggingCardPosition.FinishedOverThreshold && SupportedSwipeDirections.IsSupported(direction))
+            {
+                // Animate the top card off the screen (best-effort)
+                try
+                {
+                    if (direction.IsLeft() || direction.IsRight())
+                    {
+                        await topCard.TranslateTo(_cardDistanceX > 0 ? Width : -Width, 0, AnimationLength / 2, Easing.SpringOut);
+                    }
+                    else
+                    {
+                        await topCard.TranslateTo(0, _cardDistanceY > 0 ? Height : -Height, AnimationLength / 2, Easing.SpringOut);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"HandleTouchEnd swipe animation error: {ex.Message}");
+                }
 
-            SendSwiped(topCard, direction);
+                // State transition must happen regardless of animation success
+                topCard.IsVisible = false;
+                topCard.Scale = 0.0;
+                topCard.Rotation = 0;
+                topCard.TranslationX = 0;
+                topCard.TranslationY = -topCard.Y;
 
-            ShowNextCard();
+                SendSwiped(topCard, direction);
+                ShowNextCard();
+            }
+            else
+            {
+                // Snap-back animations (best-effort)
+                try
+                {
+                    var translateTask = topCard.TranslateTo((-topCard.X), -topCard.Y, AnimationLength, Easing.SpringOut);
+                    var rotateTask = topCard.RotateTo(0, AnimationLength, Easing.SpringOut);
+
+                    var prevCard = _cards[PrevCardIndex(_topCardIndex)];
+                    var scaleTask = prevCard.ScaleTo(BackCardScale, AnimationLength, Easing.SpringOut);
+
+                    await Task.WhenAll(translateTask, rotateTask, scaleTask);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"HandleTouchEnd snap-back animation error: {ex.Message}");
+                }
+            }
         }
-        else
+        catch (Exception ex)
         {
-            // Move the top card back to the center
-            // Not awaiting on purpose to allow TranslateTo, RotateTo and ScaleTo to happen simultaneously
-            topCard.TranslateTo((-topCard.X), -topCard.Y, AnimationLength, Easing.SpringOut);
-            topCard.RotateTo(0, AnimationLength, Easing.SpringOut);
-
-            // Scale the back card down
-            var prevCard = _cards[PrevCardIndex(_topCardIndex)];
-            await prevCard.ScaleTo(BackCardScale, AnimationLength, Easing.SpringOut);
+            Debug.WriteLine($"HandleTouchEnd error: {ex}");
         }
-
-        _ignoreTouch = false;
+        finally
+        {
+            _ignoreTouch = false;
+        }
     }
 
     private void ShowNextCard()
@@ -650,42 +724,29 @@ public class SwipeCardView : ContentView, IDisposable
             return;
         }
 
-        if (_itemIndex > 0)
-        {
-            TopItem = ItemsSource[_itemIndex - 1];
-        }
-        else
-        {
-            // Fallback for an irregular case
-            TopItem = ItemsSource.Count > 0 ? ItemsSource[_itemIndex] : null;
-        }
-
-        var topCard = _cards[_topCardIndex];
+        // Update _topCardIndex to point to the new top card
+        var oldTopCard = _cards[_topCardIndex];
         _topCardIndex = NextCardIndex(_topCardIndex);
 
-        // If there are more cards to show, show the next card in the place of
-        // the card that was swiped off the screen
+        // Set TopItem to the binding context of the new top card
+        TopItem = _cards[_topCardIndex]?.BindingContext;
+
+        // If there are more cards to show, recycle the old top card
+        // for the next item in the source
         if (_itemIndex < ItemsSource.Count)
         {
             // Push it to the back z order
             var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
-            topCard.ZIndex = minZIndex - 1;
+            oldTopCard.ZIndex = minZIndex - 1;
 
-            try
-            {
-                // Reset its scale, opacity and rotation
-                topCard.Scale = BackCardScale;
-                topCard.Rotation = 0;
-                topCard.TranslationX = 0;
-                topCard.TranslationY = -topCard.Y;
-            }
-            catch (Exception exception)
-            {
-                Debug.WriteLine(exception);
-            }
+            // Reset its scale, opacity and rotation
+            oldTopCard.Scale = BackCardScale;
+            oldTopCard.Rotation = 0;
+            oldTopCard.TranslationX = 0;
+            oldTopCard.TranslationY = -oldTopCard.Y;
 
-            topCard.BindingContext = ItemsSource[_itemIndex];
-            topCard.IsVisible = true;
+            oldTopCard.BindingContext = ItemsSource[_itemIndex];
+            oldTopCard.IsVisible = true;
             _itemIndex++;
         }
     }
@@ -727,7 +788,7 @@ public class SwipeCardView : ContentView, IDisposable
     private void SendDragging(View sender, SwipeCardDirection direction, DraggingCardPosition position, double distanceDraggedX, double distanceDraggedY)
     {
         var cmd = DraggingCommand;
-        if (cmd != null && cmd.CanExecute(SwipedCommandParameter))
+        if (cmd != null && cmd.CanExecute(DraggingCommandParameter))
         {
             cmd.Execute(new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY));
         }

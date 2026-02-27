@@ -1,35 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#nullable enable
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace MLToolkit.Forms.SwipeCardView.Tests
+namespace Plugin.Maui.SwipeCardView.Tests;
+
+class MockViewModel : INotifyPropertyChanged
 {
-    class MockViewModel : INotifyPropertyChanged
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public MockViewModel(string? text = null)
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        _text = text;
+    }
 
-        public MockViewModel(string text=null)
+    string? _text;
+    public virtual string? Text
+    {
+        get { return _text; }
+        set
         {
-            _text = text;
-        }
+            if (_text == value)
+                return;
 
-        string _text;
-        public virtual string Text {
-            get { return _text; }
-            set {
-                if (_text == value)
-                    return;
-
-                _text = value;
-                OnPropertyChanged ("Text");
-            }
+            _text = value;
+            OnPropertyChanged();
         }
+    }
 
-        protected void OnPropertyChanged ([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs (propertyName));
-        }
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
