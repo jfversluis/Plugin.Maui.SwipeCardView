@@ -386,12 +386,14 @@ public class SwipeCardView : ContentView, IDisposable
         for (var i = NumCards - 1; i >= 0; i--)
         {
             var content = swipeCardView.ItemTemplate.CreateContent();
+#pragma warning disable CS0618 // ViewCell is obsolete but still supported for backward compatibility
             if (!(content is View) && !(content is ViewCell))
             {
                 throw new Exception($"Invalid visual object {nameof(content)}");
             }
 
             var card = content is View view1 ? view1 : ((ViewCell)content).View;
+#pragma warning restore CS0618
 
             swipeCardView._cards[i] = card;
             card.IsVisible = false;
@@ -664,11 +666,11 @@ public class SwipeCardView : ContentView, IDisposable
                 {
                     if (direction.IsLeft() || direction.IsRight())
                     {
-                        await topCard.TranslateTo(_cardDistanceX > 0 ? Width : -Width, 0, AnimationLength / 2, Easing.SpringOut);
+                        await topCard.TranslateToAsync(_cardDistanceX > 0 ? Width : -Width, 0, AnimationLength / 2, Easing.SpringOut);
                     }
                     else
                     {
-                        await topCard.TranslateTo(0, _cardDistanceY > 0 ? Height : -Height, AnimationLength / 2, Easing.SpringOut);
+                        await topCard.TranslateToAsync(0, _cardDistanceY > 0 ? Height : -Height, AnimationLength / 2, Easing.SpringOut);
                     }
                 }
                 catch (Exception ex)
@@ -691,11 +693,11 @@ public class SwipeCardView : ContentView, IDisposable
                 // Snap-back animations (best-effort)
                 try
                 {
-                    var translateTask = topCard.TranslateTo((-topCard.X), -topCard.Y, AnimationLength, Easing.SpringOut);
-                    var rotateTask = topCard.RotateTo(0, AnimationLength, Easing.SpringOut);
+                    var translateTask = topCard.TranslateToAsync((-topCard.X), -topCard.Y, AnimationLength, Easing.SpringOut);
+                    var rotateTask = topCard.RotateToAsync(0, AnimationLength, Easing.SpringOut);
 
                     var prevCard = _cards[PrevCardIndex(_topCardIndex)];
-                    var scaleTask = prevCard.ScaleTo(BackCardScale, AnimationLength, Easing.SpringOut);
+                    var scaleTask = prevCard.ScaleToAsync(BackCardScale, AnimationLength, Easing.SpringOut);
 
                     await Task.WhenAll(translateTask, rotateTask, scaleTask);
                 }
