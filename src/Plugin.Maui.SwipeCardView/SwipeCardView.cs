@@ -322,7 +322,7 @@ public class SwipeCardView : ContentView, IDisposable
     /// <param name="endDelay">End delay. It should be a positive number (i.e. 200 milliseconds)</param>
     public async Task InvokeSwipe(SwipeCardDirection swipeCardDirection, uint numberOfTouches, uint touchDifference, TimeSpan touchDelay, TimeSpan endDelay)
     {
-        if (numberOfTouches == 0 || touchDifference == 0)
+        if (_disposed || _ignoreTouch || numberOfTouches == 0 || touchDifference == 0)
         {
             return;
         }
@@ -468,7 +468,7 @@ public class SwipeCardView : ContentView, IDisposable
 
     private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
-        if (ItemsSource == null || ItemsSource.Count == 0)
+        if (_disposed || ItemsSource == null || ItemsSource.Count == 0)
         {
             return;
         }
@@ -486,6 +486,10 @@ public class SwipeCardView : ContentView, IDisposable
             case GestureStatus.Completed:
                 _ = HandleTouchEnd();
                 break;
+
+            case GestureStatus.Canceled:
+                _ = HandleTouchEnd();
+                break;
         }
     }
 
@@ -501,7 +505,7 @@ public class SwipeCardView : ContentView, IDisposable
         }
 
         // Guard: cards are not yet created (ItemTemplate not set)
-        if (_cards[0] == null || _cards[1] == null)
+        if (_cards[0] == null || _cards[1] == null || Content == null)
         {
             return;
         }
@@ -535,8 +539,8 @@ public class SwipeCardView : ContentView, IDisposable
             card.Rotation = 0;
             card.TranslationX = 0;
             card.TranslationY = -card.Y;
-            var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
-            card.ZIndex = minZIndex - 1;
+            // Use fixed ZIndex: top card = 1, back card = 0
+            card.ZIndex = (i == _topCardIndex) ? 1 : 0;
             card.IsVisible = true;
             _itemIndex++;
         }
@@ -581,9 +585,12 @@ public class SwipeCardView : ContentView, IDisposable
             {
                 topCard.TranslationX = differenceX;
 
-                // Calculate a angle for the card
-                var rotationAngle = (float)(CardRotation * Math.Min(differenceX / Width, 1.0f));
-                topCard.Rotation = rotationAngle;
+                // Calculate a angle for the card (guard against Width==0 before layout)
+                if (Width > 0)
+                {
+                    var rotationAngle = (float)(CardRotation * Math.Min(differenceX / Width, 1.0f));
+                    topCard.Rotation = rotationAngle;
+                }
             }
 
             if ((differenceY > 0 && SupportedDraggingDirections.IsDown()) || (differenceY < 0 && SupportedDraggingDirections.IsUp()))
@@ -595,27 +602,31 @@ public class SwipeCardView : ContentView, IDisposable
             _cardDistanceX = differenceX;
             _cardDistanceY = differenceY;
 
-            SwipeCardDirection direction;
-            DraggingCardPosition position;
-            if (Math.Abs(differenceX) > Math.Abs(differenceY))
+            // Only send dragging events when there's actual movement
+            if (Math.Abs(differenceX) > 0 || Math.Abs(differenceY) > 0)
             {
-                direction = differenceX > 0 ? SwipeCardDirection.Right : SwipeCardDirection.Left;
-                position = Math.Abs(differenceX) > Threshold ? DraggingCardPosition.OverThreshold : DraggingCardPosition.UnderThreshold;
-            }
-            else
-            {
-                direction = differenceY > 0 ? SwipeCardDirection.Down : SwipeCardDirection.Up;
-                position = Math.Abs(differenceY) > Threshold ? DraggingCardPosition.OverThreshold : DraggingCardPosition.UnderThreshold;
-            }
+                SwipeCardDirection direction;
+                DraggingCardPosition position;
+                if (Math.Abs(differenceX) > Math.Abs(differenceY))
+                {
+                    direction = differenceX > 0 ? SwipeCardDirection.Right : SwipeCardDirection.Left;
+                    position = Math.Abs(differenceX) > Threshold ? DraggingCardPosition.OverThreshold : DraggingCardPosition.UnderThreshold;
+                }
+                else
+                {
+                    direction = differenceY > 0 ? SwipeCardDirection.Down : SwipeCardDirection.Up;
+                    position = Math.Abs(differenceY) > Threshold ? DraggingCardPosition.OverThreshold : DraggingCardPosition.UnderThreshold;
+                }
 
-            if (SupportedDraggingDirections.IsSupported(direction))
-            {
-                SendDragging(topCard, direction, position, differenceX, differenceY);
+                if (SupportedDraggingDirections.IsSupported(direction))
+                {
+                    SendDragging(topCard, direction, position, differenceX, differenceY);
+                }
             }
         }
 
-        // Scale the back card
-        if (backCard != null && backCard.IsVisible)
+        // Scale the back card (guard against Threshold==0)
+        if (backCard != null && backCard.IsVisible && Threshold > 0)
         {
             var cardDistance = Math.Abs(differenceX) > Math.Abs(differenceY) ? differenceX : differenceY;
             backCard.Scale = Math.Min(BackCardScale + Math.Abs((cardDistance / Threshold) * (1.0f - BackCardScale)), 1.0f);
@@ -739,6 +750,9 @@ public class SwipeCardView : ContentView, IDisposable
         // Set TopItem to the binding context of the new top card
         TopItem = _cards[_topCardIndex]?.BindingContext;
 
+        // Ensure new top card has higher ZIndex
+        _cards[_topCardIndex].ZIndex = 1;
+
         // If there are more cards to show, recycle the old top card
         // for the next item in the source
         if (_itemIndex < ItemsSource.Count)
@@ -746,9 +760,8 @@ public class SwipeCardView : ContentView, IDisposable
             // Cancel any lingering animations before recycling
             oldTopCard.CancelAnimations();
 
-            // Push it to the back z order
-            var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
-            oldTopCard.ZIndex = minZIndex - 1;
+            // Push it behind the top card
+            oldTopCard.ZIndex = 0;
 
             // Reset its scale, opacity and rotation
             oldTopCard.Scale = BackCardScale;
