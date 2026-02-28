@@ -535,12 +535,18 @@ public class SwipeCardView : ContentView, IDisposable
             }
 
             Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
-            card.Scale = GetScale(i);
+            // Always lay out cards at Scale=1.0 so the native platform computes
+            // full-size bounds. The BackCardScale is applied only as a temporary
+            // visual transform when dragging starts (see HandleTouchStart).
+            card.Scale = 1.0;
             card.Rotation = 0;
             card.TranslationX = 0;
             card.TranslationY = -card.Y;
             // Use fixed ZIndex: top card = 1, back card = 0
             card.ZIndex = (i == _topCardIndex) ? 1 : 0;
+            // Hide back card to prevent rendering bleed-through;
+            // it becomes visible when dragging starts (HandleTouchStart)
+            card.Opacity = (i == _topCardIndex) ? 1 : 0;
             card.IsVisible = true;
             _itemIndex++;
         }
@@ -559,6 +565,16 @@ public class SwipeCardView : ContentView, IDisposable
         if (topCard == null)
         {
             return;
+        }
+
+        // Reveal the back card for the parallax scale effect during drag.
+        // Apply BackCardScale now (not during layout) so the native platform
+        // always computes full-size bounds for the card.
+        var backCard = _cards[PrevCardIndex(_topCardIndex)];
+        if (backCard != null)
+        {
+            backCard.Scale = BackCardScale;
+            backCard.Opacity = 1;
         }
 
         _cardDistanceX = 0;
@@ -710,10 +726,14 @@ public class SwipeCardView : ContentView, IDisposable
                 // Snap-back animations (best-effort)
                 try
                 {
-                    var translateTask = topCard.TranslateToAsync((-topCard.X), -topCard.Y, AnimationLength, Easing.SpringOut);
-                    var rotateTask = topCard.RotateToAsync(0, AnimationLength, Easing.SpringOut);
-
+                    // Cancel any lingering animations before starting snap-back
+                    topCard.CancelAnimations();
                     var prevCard = _cards[PrevCardIndex(_topCardIndex)];
+                    prevCard.CancelAnimations();
+
+                    // Snap-back: TranslationX must animate to 0 (matching Setup home position)
+                    var translateTask = topCard.TranslateToAsync(0, -topCard.Y, AnimationLength, Easing.SpringOut);
+                    var rotateTask = topCard.RotateToAsync(0, AnimationLength, Easing.SpringOut);
                     var scaleTask = prevCard.ScaleToAsync(BackCardScale, AnimationLength, Easing.SpringOut);
 
                     await Task.WhenAll(translateTask, rotateTask, scaleTask);
@@ -722,6 +742,15 @@ public class SwipeCardView : ContentView, IDisposable
                 {
                     Debug.WriteLine($"HandleTouchEnd snap-back animation error: {ex.Message}");
                 }
+
+                // Ensure top card is at its correct home state after snap-back
+                topCard.Scale = 1.0;
+                topCard.TranslationX = 0;
+
+                // Hide back card again and reset Scale to 1.0 for correct layout
+                var snapBackCard = _cards[PrevCardIndex(_topCardIndex)];
+                snapBackCard.Opacity = 0;
+                snapBackCard.Scale = 1.0;
             }
         }
         catch (Exception ex)
@@ -750,8 +779,25 @@ public class SwipeCardView : ContentView, IDisposable
         // Set TopItem to the binding context of the new top card
         TopItem = _cards[_topCardIndex]?.BindingContext;
 
-        // Ensure new top card has higher ZIndex
-        _cards[_topCardIndex].ZIndex = 1;
+        // Batch all property changes so the platform renderer applies them
+        // in a single pass, avoiding partial-update rendering glitches.
+        var newTopCard = _cards[_topCardIndex];
+        newTopCard.BatchBegin();
+        newTopCard.ZIndex = 1;
+        newTopCard.Scale = 1.0;
+        newTopCard.TranslationX = 0;
+        newTopCard.Opacity = 1;
+        newTopCard.BatchCommit();
+
+        // Schedule a deferred layout invalidation after the current layout cycle.
+        // This forces Android to re-measure the card at Scale=1.0, which is needed
+        // when inner content was modified during the drag (e.g. label text changes)
+        // while the card was at BackCardScale, causing the CardView to cache stale bounds.
+        Dispatcher.Dispatch(() =>
+        {
+            newTopCard.InvalidateMeasure();
+            ((View)newTopCard.Parent)?.InvalidateMeasure();
+        });
 
         // If there are more cards to show, recycle the old top card
         // for the next item in the source
@@ -763,14 +809,17 @@ public class SwipeCardView : ContentView, IDisposable
             // Push it behind the top card
             oldTopCard.ZIndex = 0;
 
-            // Reset its scale, opacity and rotation
-            oldTopCard.Scale = BackCardScale;
+            // Reset to full scale so the native platform computes correct bounds.
+            // BackCardScale is applied later when dragging starts (HandleTouchStart).
+            oldTopCard.Scale = 1.0;
             oldTopCard.Rotation = 0;
             oldTopCard.TranslationX = 0;
             oldTopCard.TranslationY = -oldTopCard.Y;
 
             oldTopCard.BindingContext = ItemsSource[_itemIndex];
             oldTopCard.IsVisible = true;
+            // Hide recycled back card to prevent rendering bleed-through
+            oldTopCard.Opacity = 0;
             _itemIndex++;
         }
     }

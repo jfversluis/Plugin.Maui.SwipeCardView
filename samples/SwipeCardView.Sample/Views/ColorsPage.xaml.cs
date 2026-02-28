@@ -17,11 +17,11 @@ public partial class ColorsPage : ContentPage
     {
         var view = (View)sender;
 
-        var directionLabel = view.FindByName<Label>("DirectionLabel");
-        directionLabel.Text = e.Direction.ToString();
-
-        var positionLabel = view.FindByName<Label>("PositionLabel");
-        positionLabel.Text = e.Position.ToString();
+        // Update page-level labels (not inside card template) to avoid
+        // layout recalculation inside the Frame during Scale transforms,
+        // which causes Android rendering artifacts.
+        DirectionLabel.Text = e.Direction.ToString();
+        PositionLabel.Text = e.Position.ToString();
 
         switch (e.Position)
         {
@@ -59,8 +59,8 @@ public partial class ColorsPage : ContentPage
 
             case DraggingCardPosition.FinishedOverThreshold:
                 view.BackgroundColor = Colors.Beige;
-                directionLabel.Text = string.Empty;
-                positionLabel.Text = string.Empty;
+                DirectionLabel.Text = string.Empty;
+                PositionLabel.Text = string.Empty;
                 break;
 
             default:

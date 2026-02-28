@@ -21,13 +21,13 @@
                         <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" InputTransparent="True">
                             <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                                 <Label Text="{Binding .}" FontSize="Large" />
-                                <Label x:Name="DirectionLabel" />
-                                <Label x:Name="PositionLabel" />
                             </StackLayout>
                         </Frame>
                     </DataTemplate>
                 </swipeCardView:SwipeCardView.ItemTemplate>
             </swipeCardView:SwipeCardView>
+            <Label x:Name="DirectionLabel" HorizontalOptions="CenterAndExpand" />
+            <Label x:Name="PositionLabel" HorizontalOptions="CenterAndExpand" />
             <Label Text="Drag slowly to see colors feedback" HorizontalOptions="CenterAndExpand"></Label>
             <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
                 <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
