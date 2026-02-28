@@ -678,6 +678,12 @@ public class SwipeCardView : ContentView, IDisposable
                     Debug.WriteLine($"HandleTouchEnd swipe animation error: {ex.Message}");
                 }
 
+                // Cancel any lingering scale animation on the back card and ensure
+                // it's at full scale before it becomes the new top card
+                var backCard = _cards[NextCardIndex(_topCardIndex)];
+                backCard.CancelAnimations();
+                backCard.Scale = 1.0;
+
                 // State transition must happen regardless of animation success
                 topCard.IsVisible = false;
                 topCard.Scale = 0.0;
@@ -737,6 +743,9 @@ public class SwipeCardView : ContentView, IDisposable
         // for the next item in the source
         if (_itemIndex < ItemsSource.Count)
         {
+            // Cancel any lingering animations before recycling
+            oldTopCard.CancelAnimations();
+
             // Push it to the back z order
             var minZIndex = ((Grid)Content).Children.Select(x => x.ZIndex).Min();
             oldTopCard.ZIndex = minZIndex - 1;
