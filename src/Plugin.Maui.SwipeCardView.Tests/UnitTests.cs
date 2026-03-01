@@ -267,7 +267,8 @@ public class UnitTests : TestBase
     [TestMethod]
     public async Task BorderTemplate_ShouldWorkAsDataTemplateRoot()
     {
-        // Issue #3: Border should work as DataTemplate root, not just Frame
+        // Issue #3: Border should work as DataTemplate root, not just Frame.
+        // Tests functional behavior (binding, swiping); visual rendering verified in BorderPage sample.
         var borderTemplate = new DataTemplate(() =>
         {
             var border = new Border
