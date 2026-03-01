@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
+             x:Class="SwipeCardView.Sample.Views.BorderPage"
+             Shell.BackgroundColor="{x:StaticResource Primary}"
+             Shell.TitleColor="{x:StaticResource White}"
+             Title="Border Page">
+
+    <StackLayout Padding="10">
+        <Label Text="Uses Border instead of Frame (Frame is obsolete)"
+               HorizontalOptions="Center"
+               FontSize="Small"
+               TextColor="Gray" />
+        <swipeCardView:SwipeCardView
+            ItemsSource="{Binding CardItems}"
+            SwipedCommand="{Binding SwipedCommand}"
+            VerticalOptions="FillAndExpand"
+            HorizontalOptions="FillAndExpand"
+            Threshold="100">
+            <swipeCardView:SwipeCardView.ItemTemplate>
+                <DataTemplate>
+                    <!-- Border works as DataTemplate root.
+                         Key: set StrokeShape for rounded corners and BackgroundColor for visibility. -->
+                    <Border StrokeShape="RoundRectangle 16"
+                            Stroke="{x:StaticResource Primary}"
+                            StrokeThickness="2"
+                            BackgroundColor="White"
+                            Padding="20"
+                            InputTransparent="True">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="2,2" Radius="8" Opacity="0.3" />
+                        </Border.Shadow>
+                        <VerticalStackLayout HorizontalOptions="Center"
+                                             VerticalOptions="Center"
+                                             Spacing="10">
+                            <Label Text="&#x1F4CC;"
+                                   FontSize="48"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="{Binding .}"
+                                   FontSize="32"
+                                   FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" />
+                            <Label Text="Swipe me!"
+                                   FontSize="Small"
+                                   TextColor="Gray"
+                                   HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </swipeCardView:SwipeCardView.ItemTemplate>
+        </swipeCardView:SwipeCardView>
+        <Label Text="{Binding Message}" HorizontalOptions="CenterAndExpand" />
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+            <Button Text="Clear Items" Command="{Binding ClearItemsCommand}" />
+            <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}" />
+        </StackLayout>
+    </StackLayout>
+
+</ContentPage>
