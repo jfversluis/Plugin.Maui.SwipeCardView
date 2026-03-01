@@ -157,6 +157,7 @@ public class SwipeCardView : ContentView, IDisposable
     private bool _ignoreTouch = false;
 
     private bool _disposed = false;
+    private bool _programmaticSwipe = false;
 
     #endregion Private fields
 
@@ -322,47 +323,58 @@ public class SwipeCardView : ContentView, IDisposable
     /// <param name="endDelay">End delay. It should be a positive number (i.e. 200 milliseconds)</param>
     public async Task InvokeSwipe(SwipeCardDirection swipeCardDirection, uint numberOfTouches, uint touchDifference, TimeSpan touchDelay, TimeSpan endDelay)
     {
-        if (_disposed || _ignoreTouch || numberOfTouches == 0 || touchDifference == 0)
+        if (_disposed || _ignoreTouch || _programmaticSwipe || numberOfTouches == 0 || touchDifference == 0)
         {
             return;
         }
 
-        var differenceX = 0;
-        var differenceY = 0;
+        // Block user touch input during the programmatic swipe to prevent
+        // concurrent gesture updates from corrupting card state.
+        _programmaticSwipe = true;
 
-        switch (swipeCardDirection)
+        try
         {
-            case SwipeCardDirection.Right:
-                differenceX = (int)touchDifference;
-                break;
+            var differenceX = 0;
+            var differenceY = 0;
 
-            case SwipeCardDirection.Left:
-                differenceX = (int)(-1 * touchDifference);
-                break;
+            switch (swipeCardDirection)
+            {
+                case SwipeCardDirection.Right:
+                    differenceX = (int)touchDifference;
+                    break;
 
-            case SwipeCardDirection.Up:
-                differenceY = (int)(-1 * touchDifference);
-                break;
+                case SwipeCardDirection.Left:
+                    differenceX = (int)(-1 * touchDifference);
+                    break;
 
-            case SwipeCardDirection.Down:
-                differenceY = (int)touchDifference;
-                break;
+                case SwipeCardDirection.Up:
+                    differenceY = (int)(-1 * touchDifference);
+                    break;
 
-            default:
-                throw new ArgumentOutOfRangeException(nameof(swipeCardDirection), swipeCardDirection, null);
+                case SwipeCardDirection.Down:
+                    differenceY = (int)touchDifference;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(swipeCardDirection), swipeCardDirection, null);
+            }
+
+            HandleTouchStart();
+
+            for (var i = 1; i < numberOfTouches; i++)
+            {
+                HandleTouch(differenceX * i, differenceY * i);
+                await Task.Delay(touchDelay);
+            }
+
+            await Task.Delay(endDelay);
+
+            await HandleTouchEnd();
         }
-
-        HandleTouchStart();
-
-        for (var i = 1; i < numberOfTouches; i++)
+        finally
         {
-            HandleTouch(differenceX * i, differenceY * i);
-            await Task.Delay(touchDelay);
+            _programmaticSwipe = false;
         }
-
-        await Task.Delay(endDelay);
-
-        await HandleTouchEnd();
     }
 
     #endregion Public Methods
@@ -468,7 +480,7 @@ public class SwipeCardView : ContentView, IDisposable
 
     private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
-        if (_disposed || ItemsSource == null || ItemsSource.Count == 0)
+        if (_disposed || _programmaticSwipe || ItemsSource == null || ItemsSource.Count == 0)
         {
             return;
         }

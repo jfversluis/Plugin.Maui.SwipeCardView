@@ -13,8 +13,8 @@ public enum DraggingCardPosition
     OverThreshold = 2,
 
     /// <summary>Indicates an ending position under threshold.</summary>
-    FinishedUnderThreshold = 3,
+    FinishedUnderThreshold = 4,
 
     /// <summary>Indicates an ending position over threshold.</summary>
-    FinishedOverThreshold = 4
+    FinishedOverThreshold = 8
 }
