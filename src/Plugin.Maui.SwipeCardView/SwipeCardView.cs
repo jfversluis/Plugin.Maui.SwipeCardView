@@ -33,14 +33,13 @@ public class SwipeCardView : ContentView, IDisposable
             null,
             BindingMode.OneWayToSource);
 
-    // TODO Uncomment to enable the feature
-    ////public static readonly BindableProperty PreviousItemProperty =
-    ////    BindableProperty.Create(
-    ////        nameof(PreviousItem),
-    ////        typeof(object),
-    ////        typeof(SwipeCardView),
-    ////        null,
-    ////        BindingMode.OneWayToSource);
+    public static readonly BindableProperty PreviousItemProperty =
+        BindableProperty.Create(
+            nameof(PreviousItem),
+            typeof(object),
+            typeof(SwipeCardView),
+            null,
+            BindingMode.OneWayToSource);
 
     public static readonly BindableProperty SwipedCommandProperty =
         BindableProperty.Create(
@@ -152,7 +151,8 @@ public class SwipeCardView : ContentView, IDisposable
 
     private float _cardDistanceY = 0;   // Distance the card has been moved on Y axis
 
-    private int _itemIndex = 0; // The last items index added to the stack of the cards
+    private int _itemIndex = 0; // The next items index to be loaded into a card
+    private int _currentDisplayIndex = 0; // Index of the currently displayed top item in ItemsSource
 
     private bool _ignoreTouch = false;
 
@@ -196,12 +196,11 @@ public class SwipeCardView : ContentView, IDisposable
         set => SetValue(TopItemProperty, value);
     }
 
-    // TODO Uncomment to enable the feature
-    ////public object PreviousItem
-    ////{
-    ////    get => (object)GetValue(PreviousItemProperty);
-    ////    set => SetValue(PreviousItemProperty, value);
-    ////}
+    public object? PreviousItem
+    {
+        get => GetValue(PreviousItemProperty);
+        set => SetValue(PreviousItemProperty, value);
+    }
 
     public ICommand SwipedCommand
     {
@@ -379,6 +378,46 @@ public class SwipeCardView : ContentView, IDisposable
 
     #endregion Public Methods
 
+    /// <summary>
+    /// Goes back to the previously swiped card. Returns true if successful,
+    /// false if already at the first item or no items are available.
+    /// </summary>
+    public bool GoBack()
+    {
+        if (_disposed || _ignoreTouch || _programmaticSwipe)
+        {
+            return false;
+        }
+
+        if (ItemsSource == null || ItemsSource.Count == 0)
+        {
+            return false;
+        }
+
+        // If TopItem is null (all cards swiped), go back to the last item
+        if (TopItem == null)
+        {
+            _itemIndex = ItemsSource.Count - 1;
+            Setup();
+
+            // Also reset the back card so it doesn't show stale content
+            var backCard = _cards[PrevCardIndex(_topCardIndex)];
+            backCard.IsVisible = false;
+            backCard.Opacity = 0;
+
+            return _itemIndex >= 0;
+        }
+
+        // Can't go back if at the first item
+        if (_currentDisplayIndex <= 0)
+        {
+            return false;
+        }
+
+        ShowPreviousCard();
+        return true;
+    }
+
     #region Event Handlers
 
     private static void OnItemTemplatePropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -420,6 +459,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (swipeCardView.ItemsSource != null && swipeCardView.ItemsSource.Count > 0)
         {
             swipeCardView._itemIndex = 0;
+            swipeCardView._currentDisplayIndex = 0;
             swipeCardView.Setup();
         }
     }
@@ -435,6 +475,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         observable = newValue as INotifyCollectionChanged;
         swipeCardView._itemIndex = 0;
+        swipeCardView._currentDisplayIndex = 0;
         swipeCardView.Setup();
         if (observable != null)
         {
@@ -447,6 +488,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             _itemIndex = 0;
+            _currentDisplayIndex = 0;
 
             // Cancel any running animations before resetting
             foreach (var card in _cards)
@@ -544,6 +586,7 @@ public class SwipeCardView : ContentView, IDisposable
             if (i == 0)
             {
                 TopItem = ItemsSource[_itemIndex];
+                _currentDisplayIndex = _itemIndex;
             }
 
             Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
@@ -790,6 +833,10 @@ public class SwipeCardView : ContentView, IDisposable
 
         // Set TopItem to the binding context of the new top card
         TopItem = _cards[_topCardIndex]?.BindingContext;
+        _currentDisplayIndex++;
+
+        // Track the previous item for GoBack support
+        PreviousItem = oldTopCard?.BindingContext;
 
         // Batch all property changes so the platform renderer applies them
         // in a single pass, avoiding partial-update rendering glitches.
@@ -805,11 +852,18 @@ public class SwipeCardView : ContentView, IDisposable
         // This forces Android to re-measure the card at Scale=1.0, which is needed
         // when inner content was modified during the drag (e.g. label text changes)
         // while the card was at BackCardScale, causing the CardView to cache stale bounds.
-        Dispatcher.Dispatch(() =>
+        try
         {
-            newTopCard.InvalidateMeasure();
-            ((View)newTopCard.Parent)?.InvalidateMeasure();
-        });
+            Dispatcher.Dispatch(() =>
+            {
+                newTopCard.InvalidateMeasure();
+                ((View)newTopCard.Parent)?.InvalidateMeasure();
+            });
+        }
+        catch (InvalidOperationException)
+        {
+            // No dispatcher available (e.g. unit test context) — skip layout invalidation
+        }
 
         // If there are more cards to show, recycle the old top card
         // for the next item in the source
@@ -838,7 +892,63 @@ public class SwipeCardView : ContentView, IDisposable
 
     private void ShowPreviousCard()
     {
-        // TODO Implement
+        if (ItemsSource == null || ItemsSource.Count == 0)
+        {
+            return;
+        }
+
+        // Use _currentDisplayIndex for O(1) index resolution (handles duplicates correctly)
+        var previousItem = ItemsSource[_currentDisplayIndex - 1];
+
+        // The back card will become the new top card showing the previous item.
+        // The current top card becomes the new back card.
+        var oldTopCard = _cards[_topCardIndex];
+        var newTopCardIndex = PrevCardIndex(_topCardIndex);
+        var newTopCard = _cards[newTopCardIndex];
+
+        // Cancel any animations
+        oldTopCard.CancelAnimations();
+        newTopCard.CancelAnimations();
+
+        // Set up the new top card with the previous item
+        newTopCard.BatchBegin();
+        newTopCard.BindingContext = previousItem;
+        newTopCard.Scale = 1.0;
+        newTopCard.Rotation = 0;
+        newTopCard.TranslationX = 0;
+        newTopCard.TranslationY = -newTopCard.Y;
+        newTopCard.ZIndex = 1;
+        newTopCard.Opacity = 1;
+        newTopCard.IsVisible = true;
+        newTopCard.BatchCommit();
+
+        // Push the old top card behind as the back card
+        oldTopCard.BatchBegin();
+        oldTopCard.ZIndex = 0;
+        oldTopCard.Scale = 1.0;
+        oldTopCard.Opacity = 0;
+        oldTopCard.BatchCommit();
+
+        // Update indices
+        _currentDisplayIndex--;
+        _topCardIndex = newTopCardIndex;
+        _itemIndex = _currentDisplayIndex + 1; // _itemIndex points to the next unloaded item
+        TopItem = previousItem;
+        PreviousItem = _currentDisplayIndex >= 1 ? ItemsSource[_currentDisplayIndex - 1] : null;
+
+        // Force layout recalculation
+        try
+        {
+            Dispatcher.Dispatch(() =>
+            {
+                newTopCard.InvalidateMeasure();
+                ((View)newTopCard.Parent)?.InvalidateMeasure();
+            });
+        }
+        catch (InvalidOperationException)
+        {
+            // No dispatcher available (e.g. unit test context) — skip layout invalidation
+        }
     }
 
     // Return the next card index from the top

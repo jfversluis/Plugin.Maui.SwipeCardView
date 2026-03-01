@@ -67,4 +67,9 @@ public partial class ColorsPage : ContentPage
                 throw new ArgumentOutOfRangeException();
         }
     }
+
+    private void OnGoBackClicked(object? sender, EventArgs e)
+    {
+        SwipeCardView.GoBack();
+    }
 }

@@ -265,6 +265,144 @@ public class UnitTests : TestBase
     }
 
     [TestMethod]
+    public async Task GoBack_ShouldReturnToPreviousCard()
+    {
+        // Issue #5: ShowPreviousCard / GoBack
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        var result = swipeCardView.GoBack();
+        Assert.IsTrue(result);
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void GoBack_AtFirstItem_ShouldReturnFalse()
+    {
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2" };
+
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+
+        // Can't go back from first item
+        var result = swipeCardView.GoBack();
+        Assert.IsFalse(result);
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public async Task GoBack_MultipleTimes_ShouldWorkCorrectly()
+    {
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2", "Item3", "Item4" };
+
+        // Swipe forward 3 times
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item4", swipeCardView.TopItem);
+
+        // Go back 3 times
+        Assert.IsTrue(swipeCardView.GoBack());
+        Assert.AreEqual("Item3", swipeCardView.TopItem);
+
+        Assert.IsTrue(swipeCardView.GoBack());
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        Assert.IsTrue(swipeCardView.GoBack());
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+
+        // Can't go back further
+        Assert.IsFalse(swipeCardView.GoBack());
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public async Task GoBack_ThenSwipeForward_ShouldWorkCorrectly()
+    {
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+
+        // Swipe forward twice
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item3", swipeCardView.TopItem);
+
+        // Go back once
+        Assert.IsTrue(swipeCardView.GoBack());
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        // Swipe forward again
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item3", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void GoBack_EmptyCollection_ShouldReturnFalse()
+    {
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>();
+
+        var result = swipeCardView.GoBack();
+        Assert.IsFalse(result);
+    }
+
+    [TestMethod]
+    public async Task PreviousItem_TrackedCorrectly()
+    {
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+
+        // Initially no previous item
+        Assert.IsNull(swipeCardView.PreviousItem);
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item1", swipeCardView.PreviousItem);
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item2", swipeCardView.PreviousItem);
+    }
+
+    [TestMethod]
+    public async Task GoBack_WithDuplicateItems_ShouldWorkCorrectly()
+    {
+        // Regression test: GoBack must use index tracking, not Equals() search,
+        // to correctly handle collections with duplicate items.
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "A", "B", "A", "C" };
+
+        Assert.AreEqual("A", swipeCardView.TopItem);
+
+        // Swipe to B
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("B", swipeCardView.TopItem);
+
+        // Swipe to second A
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("A", swipeCardView.TopItem);
+
+        // GoBack from second A should go to B, not refuse (the old Equals() bug)
+        var result = swipeCardView.GoBack();
+        Assert.IsTrue(result);
+        Assert.AreEqual("B", swipeCardView.TopItem);
+
+        // GoBack again to first A
+        result = swipeCardView.GoBack();
+        Assert.IsTrue(result);
+        Assert.AreEqual("A", swipeCardView.TopItem);
+
+        // GoBack at first A should return false
+        result = swipeCardView.GoBack();
+        Assert.IsFalse(result);
+        Assert.AreEqual("A", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
     public async Task BorderTemplate_ShouldWorkAsDataTemplateRoot()
     {
         // Issue #3: Border should work as DataTemplate root, not just Frame.
