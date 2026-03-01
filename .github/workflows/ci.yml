@@ -15,5 +15,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Install .NET MAUI workload
+      run: dotnet workload install maui
     - name: Build
       run: dotnet build src\Plugin.Maui.SwipeCardView.sln -c Release
+    - name: Test
+      run: dotnet test src\Plugin.Maui.SwipeCardView.sln -c Release --no-build

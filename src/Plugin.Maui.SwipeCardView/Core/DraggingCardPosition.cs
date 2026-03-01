@@ -1,9 +1,6 @@
-﻿using System;
+﻿namespace Plugin.Maui.SwipeCardView.Core;
 
-namespace Plugin.Maui.SwipeCardView.Core;
-
-/// <summary>Enumerates dragging directions.</summary>
-[Flags]
+/// <summary>Enumerates dragging positions.</summary>
 public enum DraggingCardPosition
 {
     /// <summary>Indicates a starting position.</summary>
