@@ -30,6 +30,7 @@
             <Label x:Name="PositionLabel" HorizontalOptions="CenterAndExpand" />
             <Label Text="Drag slowly to see colors feedback" HorizontalOptions="CenterAndExpand"></Label>
             <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+                <Button Text="Go Back" Clicked="OnGoBackClicked" />
                 <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
                 <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
             </StackLayout>
