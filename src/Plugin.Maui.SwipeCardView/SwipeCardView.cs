@@ -693,11 +693,11 @@ public class SwipeCardView : ContentView, IDisposable
                 {
                     if (direction.IsLeft() || direction.IsRight())
                     {
-                        await topCard.TranslateToAsync(_cardDistanceX > 0 ? Width : -Width, 0, AnimationLength / 2, Easing.SpringOut);
+                        await topCard.TranslateToAsync(_cardDistanceX > 0 ? Width : -Width, 0, AnimationLength, Easing.CubicIn);
                     }
                     else
                     {
-                        await topCard.TranslateToAsync(0, _cardDistanceY > 0 ? Height : -Height, AnimationLength / 2, Easing.SpringOut);
+                        await topCard.TranslateToAsync(0, _cardDistanceY > 0 ? Height : -Height, AnimationLength, Easing.CubicIn);
                     }
                 }
                 catch (Exception ex)
