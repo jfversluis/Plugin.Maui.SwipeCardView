@@ -151,7 +151,8 @@ public class SwipeCardView : ContentView, IDisposable
 
     private float _cardDistanceY = 0;   // Distance the card has been moved on Y axis
 
-    private int _itemIndex = 0; // The last items index added to the stack of the cards
+    private int _itemIndex = 0; // The next items index to be loaded into a card
+    private int _currentDisplayIndex = 0; // Index of the currently displayed top item in ItemsSource
 
     private bool _ignoreTouch = false;
 
@@ -393,29 +394,22 @@ public class SwipeCardView : ContentView, IDisposable
             return false;
         }
 
-        // Find the index of the current top item
-        var currentTopItem = TopItem;
-        var currentTopIndex = -1;
-        for (var i = 0; i < ItemsSource.Count; i++)
-        {
-            if (Equals(ItemsSource[i], currentTopItem))
-            {
-                currentTopIndex = i;
-                break;
-            }
-        }
-
         // If TopItem is null (all cards swiped), go back to the last item
-        if (currentTopIndex < 0 && currentTopItem == null && ItemsSource.Count > 0)
+        if (TopItem == null)
         {
-            // Reinitialize showing the last item
             _itemIndex = ItemsSource.Count - 1;
             Setup();
+
+            // Also reset the back card so it doesn't show stale content
+            var backCard = _cards[PrevCardIndex(_topCardIndex)];
+            backCard.IsVisible = false;
+            backCard.Opacity = 0;
+
             return _itemIndex >= 0;
         }
 
         // Can't go back if at the first item
-        if (currentTopIndex <= 0)
+        if (_currentDisplayIndex <= 0)
         {
             return false;
         }
@@ -465,6 +459,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (swipeCardView.ItemsSource != null && swipeCardView.ItemsSource.Count > 0)
         {
             swipeCardView._itemIndex = 0;
+            swipeCardView._currentDisplayIndex = 0;
             swipeCardView.Setup();
         }
     }
@@ -480,6 +475,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         observable = newValue as INotifyCollectionChanged;
         swipeCardView._itemIndex = 0;
+        swipeCardView._currentDisplayIndex = 0;
         swipeCardView.Setup();
         if (observable != null)
         {
@@ -492,6 +488,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             _itemIndex = 0;
+            _currentDisplayIndex = 0;
 
             // Cancel any running animations before resetting
             foreach (var card in _cards)
@@ -589,6 +586,7 @@ public class SwipeCardView : ContentView, IDisposable
             if (i == 0)
             {
                 TopItem = ItemsSource[_itemIndex];
+                _currentDisplayIndex = _itemIndex;
             }
 
             Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
@@ -835,6 +833,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         // Set TopItem to the binding context of the new top card
         TopItem = _cards[_topCardIndex]?.BindingContext;
+        _currentDisplayIndex++;
 
         // Track the previous item for GoBack support
         PreviousItem = oldTopCard?.BindingContext;
@@ -871,7 +870,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (_itemIndex < ItemsSource.Count)
         {
             // Cancel any lingering animations before recycling
-            oldTopCard?.CancelAnimations();
+            oldTopCard.CancelAnimations();
 
             // Push it behind the top card
             oldTopCard.ZIndex = 0;
@@ -898,26 +897,8 @@ public class SwipeCardView : ContentView, IDisposable
             return;
         }
 
-        // Find the index of the current top item in ItemsSource
-        var currentTopItem = TopItem;
-        var currentTopIndex = -1;
-        for (var i = 0; i < ItemsSource.Count; i++)
-        {
-            if (Equals(ItemsSource[i], currentTopItem))
-            {
-                currentTopIndex = i;
-                break;
-            }
-        }
-
-        // If we can't find the current top item or we're already at the first item, nothing to undo
-        if (currentTopIndex <= 0)
-        {
-            return;
-        }
-
-        // The previous item is at currentTopIndex - 1
-        var previousItem = ItemsSource[currentTopIndex - 1];
+        // Use _currentDisplayIndex for O(1) index resolution (handles duplicates correctly)
+        var previousItem = ItemsSource[_currentDisplayIndex - 1];
 
         // The back card will become the new top card showing the previous item.
         // The current top card becomes the new back card.
@@ -949,10 +930,11 @@ public class SwipeCardView : ContentView, IDisposable
         oldTopCard.BatchCommit();
 
         // Update indices
+        _currentDisplayIndex--;
         _topCardIndex = newTopCardIndex;
-        _itemIndex = currentTopIndex + 1; // _itemIndex points to the next unloaded item
+        _itemIndex = _currentDisplayIndex + 1; // _itemIndex points to the next unloaded item
         TopItem = previousItem;
-        PreviousItem = currentTopIndex >= 2 ? ItemsSource[currentTopIndex - 2] : null;
+        PreviousItem = _currentDisplayIndex >= 1 ? ItemsSource[_currentDisplayIndex - 1] : null;
 
         // Force layout recalculation
         try

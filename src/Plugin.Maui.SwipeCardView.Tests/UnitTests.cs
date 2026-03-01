@@ -281,7 +281,7 @@ public class UnitTests : TestBase
     }
 
     [TestMethod]
-    public async Task GoBack_AtFirstItem_ShouldReturnFalse()
+    public void GoBack_AtFirstItem_ShouldReturnFalse()
     {
         var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
         swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2" };
@@ -365,5 +365,39 @@ public class UnitTests : TestBase
 
         await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
         Assert.AreEqual("Item2", swipeCardView.PreviousItem);
+    }
+
+    [TestMethod]
+    public async Task GoBack_WithDuplicateItems_ShouldWorkCorrectly()
+    {
+        // Regression test: GoBack must use index tracking, not Equals() search,
+        // to correctly handle collections with duplicate items.
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "A", "B", "A", "C" };
+
+        Assert.AreEqual("A", swipeCardView.TopItem);
+
+        // Swipe to B
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("B", swipeCardView.TopItem);
+
+        // Swipe to second A
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("A", swipeCardView.TopItem);
+
+        // GoBack from second A should go to B, not refuse (the old Equals() bug)
+        var result = swipeCardView.GoBack();
+        Assert.IsTrue(result);
+        Assert.AreEqual("B", swipeCardView.TopItem);
+
+        // GoBack again to first A
+        result = swipeCardView.GoBack();
+        Assert.IsTrue(result);
+        Assert.AreEqual("A", swipeCardView.TopItem);
+
+        // GoBack at first A should return false
+        result = swipeCardView.GoBack();
+        Assert.IsFalse(result);
+        Assert.AreEqual("A", swipeCardView.TopItem);
     }
 }
