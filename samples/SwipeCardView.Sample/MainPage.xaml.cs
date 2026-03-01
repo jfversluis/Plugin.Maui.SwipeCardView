@@ -28,4 +28,9 @@ public partial class MainPage : ContentPage
 	{
 		Navigation.PushAsync(new ColorsPage());
 	}
+
+	private void OnBorderPageClicked(object sender, EventArgs e)
+	{
+		Navigation.PushAsync(new BorderPage());
+	}
 }

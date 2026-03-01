@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Plugin.Maui.SwipeCardView.Core;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Plugin.Maui.SwipeCardView.Tests;
 
@@ -399,5 +400,58 @@ public class UnitTests : TestBase
         result = swipeCardView.GoBack();
         Assert.IsFalse(result);
         Assert.AreEqual("A", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public async Task BorderTemplate_ShouldWorkAsDataTemplateRoot()
+    {
+        // Issue #3: Border should work as DataTemplate root, not just Frame.
+        // Tests functional behavior (binding, swiping); visual rendering verified in BorderPage sample.
+        var borderTemplate = new DataTemplate(() =>
+        {
+            var border = new Border
+            {
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                BackgroundColor = Colors.White,
+                InputTransparent = true
+            };
+            var label = new Label();
+            label.SetBinding(Label.TextProperty, ".");
+            border.Content = label;
+            return border;
+        });
+
+        var swipeCardView = new SwipeCardView { ItemTemplate = borderTemplate };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Card1", "Card2", "Card3" };
+
+        Assert.AreEqual("Card1", swipeCardView.TopItem);
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Card2", swipeCardView.TopItem);
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Left);
+        Assert.AreEqual("Card3", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public async Task VerticalStackLayoutTemplate_ShouldWorkAsDataTemplateRoot()
+    {
+        // Issue #3: StackLayout/VerticalStackLayout should work as DataTemplate root
+        var layoutTemplate = new DataTemplate(() =>
+        {
+            var layout = new VerticalStackLayout();
+            var label = new Label();
+            label.SetBinding(Label.TextProperty, ".");
+            layout.Children.Add(label);
+            return layout;
+        });
+
+        var swipeCardView = new SwipeCardView { ItemTemplate = layoutTemplate };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Card1", "Card2" };
+
+        Assert.AreEqual("Card1", swipeCardView.TopItem);
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Card2", swipeCardView.TopItem);
     }
 }
