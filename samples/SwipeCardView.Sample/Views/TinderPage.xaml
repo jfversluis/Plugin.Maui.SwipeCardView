@@ -3,18 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
              x:Class="SwipeCardView.Sample.Views.TinderPage"
-             BackgroundColor="#F5F5F5"
-             Shell.BackgroundColor="{x:StaticResource Primary}"
-             Shell.TitleColor="{x:StaticResource White}"
+             BackgroundColor="White"
+             Shell.BackgroundColor="White"
+             Shell.TitleColor="#333333"
              Title ="Tinder">
 
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="*,Auto" Padding="0">
         <swipeCardView:SwipeCardView
             x:Name="SwipeCardView"
             ItemsSource="{Binding Profiles}"
             HorizontalOptions="FillAndExpand"
             VerticalOptions="FillAndExpand"
-            Padding="16"
+            Padding="8,4,8,0"
             SwipedCommand="{Binding SwipedCommand}"
             DraggingCommand="{Binding DraggingCommand}"
             Threshold="{Binding Threshold}"
@@ -23,84 +23,94 @@
             LoopCards="True">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
-                    <Border StrokeShape="RoundRectangle 20"
-                            Stroke="Transparent"
-                            StrokeThickness="0"
+                    <Border StrokeShape="RoundRectangle 12"
+                            Stroke="#E8E8E8"
+                            StrokeThickness="1"
                             Padding="0"
                             InputTransparent="True"
+                            BackgroundColor="White"
                             HorizontalOptions="FillAndExpand"
                             VerticalOptions="FillAndExpand">
                         <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.18" />
+                            <Shadow Brush="Black" Offset="0,4" Radius="16" Opacity="0.12" />
                         </Border.Shadow>
-                        <Grid>
-                            <Image Source="{Binding Photo}" Aspect="AspectFill" />
-
-                            <!-- Gradient overlay at bottom for name readability -->
-                            <BoxView VerticalOptions="End" HeightRequest="160"
-                                     InputTransparent="True">
-                                <BoxView.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                        <GradientStop Color="Transparent" Offset="0.0" />
-                                        <GradientStop Color="#99000000" Offset="1.0" />
-                                    </LinearGradientBrush>
-                                </BoxView.Background>
-                            </BoxView>
+                        <Grid RowDefinitions="*,Auto">
+                            <!-- Photo -->
+                            <Image Grid.Row="0" Source="{Binding Photo}" Aspect="AspectFill" />
 
                             <!-- LIKE overlay -->
-                            <Border x:Name="LikeFrame"
-                                    StrokeShape="RoundRectangle 12"
-                                    Stroke="#63DD99" StrokeThickness="3"
+                            <Border x:Name="LikeFrame" Grid.Row="0"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="#63DD99" StrokeThickness="4"
                                     BackgroundColor="Transparent"
                                     Padding="16,8" Opacity="0"
                                     HorizontalOptions="Start" VerticalOptions="Start"
                                     Margin="24,32" Rotation="-20"
                                     InputTransparent="True">
                                 <Label x:Name="LikeText" Text="LIKE" TextColor="#63DD99"
-                                       FontSize="32" FontAttributes="Bold"
+                                       FontSize="36" FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />
                             </Border>
 
                             <!-- NOPE overlay -->
-                            <Border x:Name="NopeFrame"
-                                    StrokeShape="RoundRectangle 12"
-                                    Stroke="#FF6A4F" StrokeThickness="3"
+                            <Border x:Name="NopeFrame" Grid.Row="0"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="#FF4458" StrokeThickness="4"
                                     BackgroundColor="Transparent"
                                     Padding="16,8" Opacity="0"
                                     HorizontalOptions="End" VerticalOptions="Start"
                                     Margin="24,32" Rotation="20"
                                     InputTransparent="True">
-                                <Label Text="NOPE" TextColor="#FF6A4F"
-                                       FontSize="32" FontAttributes="Bold"
+                                <Label Text="NOPE" TextColor="#FF4458"
+                                       FontSize="36" FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />
                             </Border>
 
                             <!-- SUPER LIKE overlay -->
-                            <Border x:Name="SuperLikeFrame"
-                                    StrokeShape="RoundRectangle 12"
-                                    Stroke="#2196F3" StrokeThickness="3"
+                            <Border x:Name="SuperLikeFrame" Grid.Row="0"
+                                    StrokeShape="RoundRectangle 8"
+                                    Stroke="#00D0FF" StrokeThickness="4"
                                     BackgroundColor="Transparent"
                                     Padding="16,8" Opacity="0"
-                                    HorizontalOptions="Center" VerticalOptions="Center"
-                                    Rotation="-20"
+                                    HorizontalOptions="Center" VerticalOptions="End"
+                                    Margin="0,0,0,24" Rotation="-20"
                                     InputTransparent="True">
-                                <Label Text="SUPER LIKE" TextColor="#2196F3"
-                                       FontSize="32" FontAttributes="Bold"
+                                <Label Text="SUPER LIKE" TextColor="#00D0FF"
+                                       FontSize="28" FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />
                             </Border>
 
-                            <!-- Name + Age -->
-                            <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,24"
-                                                 InputTransparent="True">
-                                <Label TextColor="White" FontSize="24" FontAttributes="Bold">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span Text="{Binding Name}" />
-                                            <Span Text=", " />
-                                            <Span Text="{Binding Age}" />
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
+                            <!-- Info section -->
+                            <VerticalStackLayout Grid.Row="1" BackgroundColor="White"
+                                                 Padding="16,12,16,12" Spacing="2">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                        <Label Text="{Binding Name}" FontSize="22"
+                                               FontAttributes="Bold" TextColor="#333333" />
+                                        <Label Text="{Binding Age}" FontSize="22"
+                                               TextColor="#888888" />
+                                    </HorizontalStackLayout>
+                                    <Border Grid.Column="1" StrokeShape="RoundRectangle 12"
+                                            Stroke="#E0E0E0" StrokeThickness="1"
+                                            BackgroundColor="White"
+                                            WidthRequest="24" HeightRequest="24"
+                                            InputTransparent="True">
+                                        <Label Text="i" TextColor="#2196F3" FontSize="13"
+                                               FontAttributes="Bold"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                                    </Border>
+                                </Grid>
+                                <HorizontalStackLayout Spacing="4" Margin="0,4,0,0">
+                                    <Label Text="🎓" FontSize="13" VerticalOptions="Center" />
+                                    <Label Text="{Binding School}" FontSize="13"
+                                           TextColor="#999999" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="📍" FontSize="13" VerticalOptions="Center" />
+                                    <Label Text="{Binding Distance}" FontSize="13"
+                                           TextColor="#999999" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>
@@ -108,15 +118,31 @@
             </swipeCardView:SwipeCardView.ItemTemplate>
         </swipeCardView:SwipeCardView>
 
-        <!-- Action buttons -->
+        <!-- Action buttons: rewind, nope, super like, like, boost -->
         <HorizontalStackLayout Grid.Row="1" HorizontalOptions="Center"
-                               Padding="10,10,10,24" Spacing="24">
+                               Padding="0,8,0,20" Spacing="16">
+            <!-- Rewind (small) -->
+            <Border x:Name="rewindButton" StrokeShape="RoundRectangle 22"
+                    Stroke="Transparent" StrokeThickness="0"
+                    BackgroundColor="White" WidthRequest="44" HeightRequest="44"
+                    HorizontalOptions="Center" VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="#888" Offset="0,2" Radius="8" Opacity="0.15" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnRewindClicked" />
+                </Border.GestureRecognizers>
+                <Image Source="ic_tinder_rewind.svg" WidthRequest="22" HeightRequest="22"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+
+            <!-- Nope (large) -->
             <Border x:Name="nopeButton" StrokeShape="RoundRectangle 30"
-                    Stroke="#FFE8E5" StrokeThickness="2"
+                    Stroke="Transparent" StrokeThickness="0"
                     BackgroundColor="White" WidthRequest="60" HeightRequest="60"
                     HorizontalOptions="Center" VerticalOptions="Center">
                 <Border.Shadow>
-                    <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+                    <Shadow Brush="#888" Offset="0,2" Radius="8" Opacity="0.15" />
                 </Border.Shadow>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnDislikeClicked" />
@@ -125,12 +151,13 @@
                        HorizontalOptions="Center" VerticalOptions="Center" />
             </Border>
 
-            <Border x:Name="superLikeButton" StrokeShape="RoundRectangle 24"
-                    Stroke="#E3F2FD" StrokeThickness="2"
-                    BackgroundColor="White" WidthRequest="48" HeightRequest="48"
+            <!-- Super Like (small) -->
+            <Border x:Name="superLikeButton" StrokeShape="RoundRectangle 22"
+                    Stroke="Transparent" StrokeThickness="0"
+                    BackgroundColor="White" WidthRequest="44" HeightRequest="44"
                     HorizontalOptions="Center" VerticalOptions="Center">
                 <Border.Shadow>
-                    <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+                    <Shadow Brush="#888" Offset="0,2" Radius="8" Opacity="0.15" />
                 </Border.Shadow>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnSuperLikeClicked" />
@@ -139,17 +166,33 @@
                        HorizontalOptions="Center" VerticalOptions="Center" />
             </Border>
 
+            <!-- Like (large) -->
             <Border x:Name="likeButton" StrokeShape="RoundRectangle 30"
-                    Stroke="#E3F8ED" StrokeThickness="2"
+                    Stroke="Transparent" StrokeThickness="0"
                     BackgroundColor="White" WidthRequest="60" HeightRequest="60"
                     HorizontalOptions="Center" VerticalOptions="Center">
                 <Border.Shadow>
-                    <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+                    <Shadow Brush="#888" Offset="0,2" Radius="8" Opacity="0.15" />
                 </Border.Shadow>
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnLikeClicked" />
                 </Border.GestureRecognizers>
                 <Image Source="ic_tinder_like.png" WidthRequest="28" HeightRequest="28"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+
+            <!-- Boost (small) -->
+            <Border x:Name="boostButton" StrokeShape="RoundRectangle 22"
+                    Stroke="Transparent" StrokeThickness="0"
+                    BackgroundColor="White" WidthRequest="44" HeightRequest="44"
+                    HorizontalOptions="Center" VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="#888" Offset="0,2" Radius="8" Opacity="0.15" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBoostClicked" />
+                </Border.GestureRecognizers>
+                <Image Source="ic_tinder_boost.svg" WidthRequest="22" HeightRequest="22"
                        HorizontalOptions="Center" VerticalOptions="Center" />
             </Border>
         </HorizontalStackLayout>

@@ -9,4 +9,8 @@ public class Profile
     public int Age { get; set; }
 
     public string Photo { get; set; } = string.Empty;
+
+    public string School { get; set; } = string.Empty;
+
+    public string Distance { get; set; } = string.Empty;
 }

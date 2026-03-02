@@ -13,6 +13,11 @@ public partial class TinderPage : ContentPage
         SwipeCardView.Dragging += OnDragging;
     }
 
+    private void OnRewindClicked(object sender, EventArgs e)
+    {
+        SwipeCardView.GoBack(true);
+    }
+
     private async void OnDislikeClicked(object sender, EventArgs e)
     {
         await SwipeCardView.InvokeSwipe(SwipeCardDirection.Left);
@@ -28,6 +33,14 @@ public partial class TinderPage : ContentPage
         await SwipeCardView.InvokeSwipe(SwipeCardDirection.Right);
     }
 
+    private async void OnBoostClicked(object sender, EventArgs e)
+    {
+        // Boost animation - pulse the current card
+        var card = SwipeCardView;
+        await card.ScaleToAsync(1.05, 150, Easing.CubicOut);
+        await card.ScaleToAsync(1.0, 150, Easing.CubicIn);
+    }
+
     private void OnDragging(object sender, DraggingCardEventArgs e)
     {
         if (e.CardView == null) return;
@@ -39,7 +52,6 @@ public partial class TinderPage : ContentPage
         var threshold = (BindingContext as TinderPageViewModel)?.Threshold ?? 100;
 
         var draggedXPercent = e.DistanceDraggedX / threshold;
-
         var draggedYPercent = e.DistanceDraggedY / threshold;
 
         switch (e.Position)
