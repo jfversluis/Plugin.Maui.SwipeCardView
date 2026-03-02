@@ -871,6 +871,7 @@ public class SwipeCardView : ContentView, IDisposable
                 var backCard = _cards[NextCardIndex(_topCardIndex)];
                 backCard.CancelAnimations();
                 backCard.Scale = 1.0;
+                InvalidateCardLayout(backCard);
 
                 // State transition must happen regardless of animation success
                 topCard.IsVisible = false;
@@ -884,20 +885,25 @@ public class SwipeCardView : ContentView, IDisposable
             }
             else
             {
-                // Snap-back animations (best-effort)
+                // Hide the back card immediately and reset its Scale to 1.0
+                // BEFORE the snap-back animation. Animating Scale to BackCardScale
+                // (0.8) can corrupt Android's native layout cache, causing the card
+                // to render at 80% size even after Scale is restored to 1.0.
+                var prevCard = _cards[PrevCardIndex(_topCardIndex)];
+                prevCard.CancelAnimations();
+                prevCard.Opacity = 0;
+                prevCard.Scale = 1.0;
+
+                // Snap-back animations for the top card only (best-effort)
                 try
                 {
-                    // Cancel any lingering animations before starting snap-back
                     topCard.CancelAnimations();
-                    var prevCard = _cards[PrevCardIndex(_topCardIndex)];
-                    prevCard.CancelAnimations();
 
                     // Snap-back: TranslationX must animate to 0 (matching Setup home position)
                     var translateTask = topCard.TranslateToAsync(0, -topCard.Y, AnimationLength, Easing.SpringOut);
                     var rotateTask = topCard.RotateToAsync(0, AnimationLength, Easing.SpringOut);
-                    var scaleTask = prevCard.ScaleToAsync(BackCardScale, AnimationLength, Easing.SpringOut);
 
-                    await Task.WhenAll(translateTask, rotateTask, scaleTask);
+                    await Task.WhenAll(translateTask, rotateTask);
                 }
                 catch (Exception ex)
                 {
@@ -908,10 +914,8 @@ public class SwipeCardView : ContentView, IDisposable
                 topCard.Scale = 1.0;
                 topCard.TranslationX = 0;
 
-                // Hide back card again and reset Scale to 1.0 for correct layout
-                var snapBackCard = _cards[PrevCardIndex(_topCardIndex)];
-                snapBackCard.Opacity = 0;
-                snapBackCard.Scale = 1.0;
+                // Force layout invalidation to clear any stale Android layout cache
+                InvalidateCardLayout(prevCard);
             }
         }
         catch (Exception ex)
@@ -954,22 +958,9 @@ public class SwipeCardView : ContentView, IDisposable
         newTopCard.Opacity = 1;
         newTopCard.BatchCommit();
 
-        // Schedule a deferred layout invalidation after the current layout cycle.
-        // This forces Android to re-measure the card at Scale=1.0, which is needed
-        // when inner content was modified during the drag (e.g. label text changes)
-        // while the card was at BackCardScale, causing the CardView to cache stale bounds.
-        try
-        {
-            Dispatcher.Dispatch(() =>
-            {
-                newTopCard.InvalidateMeasure();
-                ((View)newTopCard.Parent)?.InvalidateMeasure();
-            });
-        }
-        catch (InvalidOperationException)
-        {
-            // No dispatcher available (e.g. unit test context) — skip layout invalidation
-        }
+        // Force layout invalidation to clear any stale Android layout cache
+        // from when the card was at BackCardScale during the drag.
+        InvalidateCardLayout(newTopCard);
 
         // If there are more cards to show, recycle the old top card
         // for the next item in the source
@@ -1119,6 +1110,25 @@ public class SwipeCardView : ContentView, IDisposable
     private float GetScale(int index)
     {
         return index == _topCardIndex ? 1.0f : BackCardScale;
+    }
+
+    /// <summary>
+    /// Forces a layout invalidation on a card to clear any stale Android layout cache.
+    /// Android's native CardView can cache layout bounds computed while the card was
+    /// at a non-1.0 Scale (e.g. BackCardScale=0.8 during drag). This method ensures
+    /// Android re-measures the card at its current Scale.
+    /// </summary>
+    private void InvalidateCardLayout(View card)
+    {
+        try
+        {
+            card.InvalidateMeasure();
+            ((View?)card.Parent)?.InvalidateMeasure();
+        }
+        catch (Exception)
+        {
+            // Ignore — may fail in unit test context without a renderer
+        }
     }
 
     private void SendSwiped(View sender, SwipeCardDirection direction)
