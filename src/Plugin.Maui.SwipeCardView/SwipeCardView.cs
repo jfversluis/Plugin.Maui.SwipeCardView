@@ -885,25 +885,21 @@ public class SwipeCardView : ContentView, IDisposable
             }
             else
             {
-                // Hide the back card immediately and reset its Scale to 1.0
-                // BEFORE the snap-back animation. Animating Scale to BackCardScale
-                // (0.8) can corrupt Android's native layout cache, causing the card
-                // to render at 80% size even after Scale is restored to 1.0.
                 var prevCard = _cards[PrevCardIndex(_topCardIndex)];
                 prevCard.CancelAnimations();
-                prevCard.Opacity = 0;
-                prevCard.Scale = 1.0;
 
-                // Snap-back animations for the top card only (best-effort)
+                // Snap-back animations (best-effort)
                 try
                 {
                     topCard.CancelAnimations();
 
-                    // Snap-back: TranslationX must animate to 0 (matching Setup home position)
+                    // Animate top card back to home position
                     var translateTask = topCard.TranslateToAsync(0, -topCard.Y, AnimationLength, Easing.SpringOut);
                     var rotateTask = topCard.RotateToAsync(0, AnimationLength, Easing.SpringOut);
+                    // Animate back card scale down (the nice parallax shrink effect)
+                    var scaleTask = prevCard.ScaleToAsync(BackCardScale, AnimationLength, Easing.SpringOut);
 
-                    await Task.WhenAll(translateTask, rotateTask);
+                    await Task.WhenAll(translateTask, rotateTask, scaleTask);
                 }
                 catch (Exception ex)
                 {
@@ -914,7 +910,13 @@ public class SwipeCardView : ContentView, IDisposable
                 topCard.Scale = 1.0;
                 topCard.TranslationX = 0;
 
-                // Force layout invalidation to clear any stale Android layout cache
+                // After the visible animation completes, reset the back card to
+                // Scale=1.0 and hide it. This prevents Android's native layout
+                // system from caching bounds at the smaller BackCardScale, which
+                // would cause the card to render at 80% size when it next becomes
+                // the top card.
+                prevCard.Opacity = 0;
+                prevCard.Scale = 1.0;
                 InvalidateCardLayout(prevCard);
             }
         }
