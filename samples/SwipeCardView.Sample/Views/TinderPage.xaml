@@ -34,12 +34,46 @@
                         <Border.Shadow>
                             <Shadow Brush="Black" Offset="0,4" Radius="16" Opacity="0.12" />
                         </Border.Shadow>
-                        <Grid RowDefinitions="*,Auto">
-                            <!-- Photo -->
-                            <Image Grid.Row="0" Source="{Binding Photo}" Aspect="AspectFill" />
+                        <Grid>
+                            <!-- Photo fills entire card -->
+                            <Image Source="{Binding Photo}" Aspect="AspectFill" />
+
+                            <!-- Bottom gradient overlay for text readability -->
+                            <BoxView VerticalOptions="End" HeightRequest="180"
+                                     InputTransparent="True">
+                                <BoxView.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="Transparent" Offset="0.0" />
+                                        <GradientStop Color="#AA000000" Offset="0.6" />
+                                        <GradientStop Color="#DD000000" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </BoxView.Background>
+                            </BoxView>
+
+                            <!-- Profile info over gradient -->
+                            <VerticalStackLayout VerticalOptions="End"
+                                                 Padding="20,0,20,20" Spacing="2"
+                                                 InputTransparent="True">
+                                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                    <Label Text="{Binding Name}" FontSize="26"
+                                           FontAttributes="Bold" TextColor="White" />
+                                    <Label Text="{Binding Age}" FontSize="26"
+                                           TextColor="#DDDDDD" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="6" Margin="0,4,0,0">
+                                    <Label Text="🎓" FontSize="14" VerticalOptions="Center" />
+                                    <Label Text="{Binding School}" FontSize="14"
+                                           TextColor="#CCCCCC" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="6">
+                                    <Label Text="📍" FontSize="14" VerticalOptions="Center" />
+                                    <Label Text="{Binding Distance}" FontSize="14"
+                                           TextColor="#CCCCCC" VerticalOptions="Center" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
 
                             <!-- LIKE overlay -->
-                            <Border x:Name="LikeFrame" Grid.Row="0"
+                            <Border x:Name="LikeFrame"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="#63DD99" StrokeThickness="4"
                                     BackgroundColor="Transparent"
@@ -53,7 +87,7 @@
                             </Border>
 
                             <!-- NOPE overlay -->
-                            <Border x:Name="NopeFrame" Grid.Row="0"
+                            <Border x:Name="NopeFrame"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="#FF4458" StrokeThickness="4"
                                     BackgroundColor="Transparent"
@@ -67,51 +101,18 @@
                             </Border>
 
                             <!-- SUPER LIKE overlay -->
-                            <Border x:Name="SuperLikeFrame" Grid.Row="0"
+                            <Border x:Name="SuperLikeFrame"
                                     StrokeShape="RoundRectangle 8"
                                     Stroke="#00D0FF" StrokeThickness="4"
                                     BackgroundColor="Transparent"
                                     Padding="16,8" Opacity="0"
                                     HorizontalOptions="Center" VerticalOptions="End"
-                                    Margin="0,0,0,24" Rotation="-20"
+                                    Margin="0,0,0,80" Rotation="-20"
                                     InputTransparent="True">
                                 <Label Text="SUPER LIKE" TextColor="#00D0FF"
                                        FontSize="28" FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />
                             </Border>
-
-                            <!-- Info section -->
-                            <VerticalStackLayout Grid.Row="1" BackgroundColor="White"
-                                                 Padding="16,12,16,12" Spacing="2">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Label Text="{Binding Name}" FontSize="22"
-                                               FontAttributes="Bold" TextColor="#333333" />
-                                        <Label Text="{Binding Age}" FontSize="22"
-                                               TextColor="#888888" />
-                                    </HorizontalStackLayout>
-                                    <Border Grid.Column="1" StrokeShape="RoundRectangle 12"
-                                            Stroke="#E0E0E0" StrokeThickness="1"
-                                            BackgroundColor="White"
-                                            WidthRequest="24" HeightRequest="24"
-                                            InputTransparent="True">
-                                        <Label Text="i" TextColor="#2196F3" FontSize="13"
-                                               FontAttributes="Bold"
-                                               HorizontalOptions="Center"
-                                               VerticalOptions="Center" />
-                                    </Border>
-                                </Grid>
-                                <HorizontalStackLayout Spacing="4" Margin="0,4,0,0">
-                                    <Label Text="🎓" FontSize="13" VerticalOptions="Center" />
-                                    <Label Text="{Binding School}" FontSize="13"
-                                           TextColor="#999999" VerticalOptions="Center" />
-                                </HorizontalStackLayout>
-                                <HorizontalStackLayout Spacing="4">
-                                    <Label Text="📍" FontSize="13" VerticalOptions="Center" />
-                                    <Label Text="{Binding Distance}" FontSize="13"
-                                           TextColor="#999999" VerticalOptions="Center" />
-                                </HorizontalStackLayout>
-                            </VerticalStackLayout>
                         </Grid>
                     </Border>
                 </DataTemplate>
