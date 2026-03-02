@@ -563,6 +563,24 @@ public class SwipeCardView : ContentView, IDisposable
                     _currentDisplayIndex += insertCount;
                     _itemIndex += insertCount;
                 }
+
+                // Prepare the back card if it hasn't been initialized yet.
+                // This happens when Setup() ran with only 1 item available (e.g.,
+                // after Clear + Add, or exhausting the stack then adding new items).
+                var addBackIdx = NextCardIndex(_topCardIndex);
+                if (_cards[addBackIdx] != null && !_cards[addBackIdx].IsVisible && _itemIndex < ItemsSource.Count)
+                {
+                    var backCard = _cards[addBackIdx];
+                    backCard.BindingContext = ItemsSource[_itemIndex];
+                    backCard.Scale = 1.0;
+                    backCard.Rotation = 0;
+                    backCard.TranslationX = 0;
+                    backCard.TranslationY = -backCard.Y;
+                    backCard.ZIndex = 0;
+                    backCard.Opacity = 0;
+                    backCard.IsVisible = true;
+                    _itemIndex++;
+                }
                 break;
 
             case NotifyCollectionChangedAction.Remove:

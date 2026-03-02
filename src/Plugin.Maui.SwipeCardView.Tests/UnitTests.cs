@@ -555,6 +555,49 @@ public class UnitTests : TestBase
     }
 
     [TestMethod]
+    public void CollectionChanged_Add_PreparesBackCard_WhenOnlyTopCardVisible()
+    {
+        // When Setup runs with 1 item, only card[0] is initialized.
+        // Adding a 2nd item should prepare card[1] as the back card.
+        var items = new ObservableCollection<string>() { "Item1" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+
+        // Add a second item — back card should now be ready
+        items.Add("Item2");
+
+        // Swipe — should transition to Item2
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Add_AfterClear_PreparesBackCard()
+    {
+        // Clear + Add: the first Add triggers Setup with 1 item,
+        // the second Add should prepare the back card.
+        var items = new ObservableCollection<string>() { "A", "B", "C" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        items.Clear();
+        Assert.IsNull(swipeCardView.TopItem);
+
+        // Add items back one at a time
+        items.Add("X1");
+        Assert.AreEqual("X1", swipeCardView.TopItem);
+
+        items.Add("X2");
+        items.Add("X3");
+
+        // Swipe — back card should have been prepared with X2
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.AreEqual("X2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
     public void SwipedCommand_CanExecute_ReceivesEventArgs()
     {
         // CanExecute should receive the same EventArgs as Execute (breaking change from PR #6)
