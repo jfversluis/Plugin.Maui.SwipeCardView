@@ -598,14 +598,15 @@ public class SwipeCardView : ContentView, IDisposable
                 break;
 
             case NotifyCollectionChangedAction.Replace:
+                if (ItemsSource == null) break;
                 // If the replaced item is currently displayed, update its binding
-                if (e.NewStartingIndex == _currentDisplayIndex)
+                if (e.NewStartingIndex == _currentDisplayIndex && _currentDisplayIndex < ItemsSource.Count)
                 {
                     var topCard = _cards[_topCardIndex];
                     topCard.BindingContext = ItemsSource[_currentDisplayIndex];
                     TopItem = topCard.BindingContext;
                 }
-                else if (e.NewStartingIndex == _currentDisplayIndex + 1)
+                else if (e.NewStartingIndex == _currentDisplayIndex + 1 && _currentDisplayIndex + 1 < ItemsSource.Count)
                 {
                     // The back card item was replaced — update its binding if visible
                     var backCard = _cards[NextCardIndex(_topCardIndex)];
