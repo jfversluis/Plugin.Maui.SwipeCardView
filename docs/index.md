@@ -98,6 +98,19 @@ public string TopItem
 
 Assuming `SwipeCardView`'s `ItemsSource` is a list of strings, `TopItem` property of the ViewModel will be OneWayToSource bound to the string on top of the stack. Keep in mind that this property is intended to be used for getting the top item value only, as setting it from a ViewModel doesn't make much sense.
 
+### Binding PreviousItem
+
+Similarly, you can bind the `PreviousItem` property to track the last swiped item:
+
+```xaml
+<swipeCardView:SwipeCardView
+    ItemsSource="{Binding CardItems}"
+    TopItem="{Binding TopItem}"
+    PreviousItem="{Binding PreviousItem}">
+```
+
+`PreviousItem` is cleared when the collection is reset or all items are removed.
+
 ## Card Appearance
 
 SwipeCardView has ItemTemplate property which can receive any kind of DataTemplate. This means that your card could be made of just one label, or could be made of complex layered layout like Tinder has.
