@@ -621,4 +621,43 @@ public class UnitTests : TestBase
         Assert.AreEqual("MyParam", args.Parameter);
         Assert.AreEqual(SwipeCardDirection.Right, args.Direction);
     }
+
+    [TestMethod]
+    public async Task GoBack_AfterLoopCycle_ShouldNotThrow()
+    {
+        var items = new ObservableCollection<string> { "A", "B", "C" };
+        var swipeCardView = new SwipeCardView
+        {
+            ItemsSource = items,
+            ItemTemplate = CreateSimpleTemplate(),
+            LoopCards = true
+        };
+
+        // Swipe through full cycle + 1 extra
+        for (int i = 0; i < 4; i++)
+        {
+            await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        }
+
+        // GoBack should work without throwing
+        var result = swipeCardView.GoBack();
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task PreviousItem_ClearedOnCollectionReset()
+    {
+        var items = new ObservableCollection<string> { "A", "B", "C" };
+        var swipeCardView = new SwipeCardView
+        {
+            ItemsSource = items,
+            ItemTemplate = CreateSimpleTemplate()
+        };
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.IsNotNull(swipeCardView.PreviousItem);
+
+        items.Clear();
+        Assert.IsNull(swipeCardView.PreviousItem);
+    }
 }

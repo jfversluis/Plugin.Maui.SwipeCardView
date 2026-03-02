@@ -583,6 +583,7 @@ public class SwipeCardView : ContentView, IDisposable
 
                 _ignoreTouch = false;
                 TopItem = null;
+                PreviousItem = null;
                 if (ItemsSource != null && ItemsSource.Count > 0)
                     Setup();
                 break;
@@ -637,6 +638,7 @@ public class SwipeCardView : ContentView, IDisposable
                     _itemIndex = 0;
                     _currentDisplayIndex = 0;
                     TopItem = null;
+                    PreviousItem = null;
                 }
                 else if (e.OldStartingIndex == _currentDisplayIndex)
                 {
@@ -1027,6 +1029,12 @@ public class SwipeCardView : ContentView, IDisposable
         // Set TopItem to the binding context of the new top card
         TopItem = _cards[_topCardIndex]?.BindingContext;
         _currentDisplayIndex++;
+
+        // Keep _currentDisplayIndex in range when looping
+        if (LoopCards && ItemsSource != null && ItemsSource.Count > 0)
+        {
+            _currentDisplayIndex = _currentDisplayIndex % ItemsSource.Count;
+        }
 
         // Track the previous item for GoBack support
         PreviousItem = oldTopCard?.BindingContext;
