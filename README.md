@@ -44,6 +44,7 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.SwipeCardView`, or 
 - **Navigation** – Go back to previously swiped cards with `GoBack()`, optionally with animation
 - **Programmatic Swiping** – Trigger swipes from code with `InvokeSwipe()`
 - **Looping** – Enable infinite card looping with the `LoopCards` property
+- **Card Stack** – Show stacked cards behind the top card with `StackDepth`, giving the visual illusion of a deck
 - **Disposable** – Proper resource cleanup with `IDisposable` implementation
 
 For more info about the features check out [the full documentation](docs/index.md).
@@ -173,6 +174,28 @@ Enable infinite card looping so the stack cycles back to the first card after re
     ItemsSource="{Binding CardItems}"
     LoopCards="True" />
 ```
+
+## Card Stack Visual Effect
+
+Show stacked cards behind the top card to create the visual illusion of a deck. Set `StackDepth` to control how many cards are visible:
+
+```xml
+<swipeCardView:SwipeCardView
+    ItemsSource="{Binding Profiles}"
+    StackDepth="2"
+    StackOffset="15"
+    BackCardScale="0.95" />
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `StackDepth` | `int` | `0` | Number of cards visible behind the top card. `0` = off (backward compatible), `1` = back card visible, `2` = back card + 1 shadow, etc. |
+| `StackOffset` | `double` | `10` | Vertical offset (in dp) between each stacked card |
+| `StackScaleStep` | `double` | `0.03` | Scale reduction per successive card (e.g., 0.03 = each card 3% smaller) |
+
+The `BackCardScale` property controls the scale of the first back card. When `StackDepth` > 1, successive shadow cards scale down further by `StackScaleStep` each.
+
+> **Note:** `StackDepth="0"` is fully backward compatible — the control behaves exactly as before.
 
 ## Migration From SwipeCardView for Xamarin.Forms
 

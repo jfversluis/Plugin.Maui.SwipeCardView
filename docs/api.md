@@ -17,6 +17,9 @@ ItemsSource | `System.Collections.IList` | null | Gets or sets the source of ite
 ItemTemplate | `Microsoft.Maui.Controls.DataTemplate` | null | Gets or sets the DataTemplate to apply to the ItemsSource. Supports any View as root, including `Border`
 LoopCards | `bool` | false | Gets or sets whether the card stack loops back to the first card after reaching the end
 PreviousItem | `System.Object` | null | Gets the previously swiped item (read-only, OneWayToSource). Cleared on collection Reset or when all items are removed
+StackDepth | `int` | 0 | Number of cards visible behind the top card. 0 = off (backward compatible), 1 = back card visible, 2+ = back card plus shadow cards
+StackOffset | `double` | 10 | Vertical offset in device-independent units between each stacked card
+StackScaleStep | `double` | 0.03 | Scale reduction applied to each successive card in the stack (e.g., 0.03 = each card 3% smaller)
 SupportedDraggingDirections | `SwipeCardDirection` | Left, Right, Up, Down | Gets or sets supported dragging direction of the top card
 SupportedSwipeDirections | `SwipeCardDirection` | Left, Right, Up, Down | Gets or sets direction in which top card could be swiped
 SwipedCommand | `System.Windows.Input.ICommand`  | null | Gets or sets the command to run when a swipe gesture is recognized. Receives `SwipedCardEventArgs` as parameter (or `SwipedCommandParameter` if set)
