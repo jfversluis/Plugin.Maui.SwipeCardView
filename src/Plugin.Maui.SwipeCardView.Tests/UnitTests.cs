@@ -153,17 +153,17 @@ public class UnitTests : TestBase
     [TestMethod]
     public async Task DraggingCommand_UsesCorrectParameter()
     {
-        // F4: DraggingCommand.CanExecute should use DraggingCommandParameter, not SwipedCommandParameter
+        // CanExecute and Execute both receive DraggingCardEventArgs with the correct parameter
         var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
         swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2" };
 
         object? receivedCanExecuteParam = null;
+        object? receivedExecuteParam = null;
         swipeCardView.DraggingCommandParameter = "DragParam";
         swipeCardView.SwipedCommandParameter = "SwipeParam";
 
-        var draggingFired = false;
         swipeCardView.DraggingCommand = new Command<object>(
-            execute: _ => draggingFired = true,
+            execute: param => receivedExecuteParam = param,
             canExecute: param =>
             {
                 receivedCanExecuteParam = param;
@@ -172,8 +172,13 @@ public class UnitTests : TestBase
 
         await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
 
-        Assert.IsTrue(draggingFired);
-        Assert.AreEqual("DragParam", receivedCanExecuteParam);
+        // Both CanExecute and Execute receive the same DraggingCardEventArgs
+        Assert.IsInstanceOfType(receivedCanExecuteParam, typeof(DraggingCardEventArgs));
+        Assert.IsInstanceOfType(receivedExecuteParam, typeof(DraggingCardEventArgs));
+
+        // The EventArgs contains the DraggingCommandParameter (not SwipedCommandParameter)
+        var canExecArgs = (DraggingCardEventArgs)receivedCanExecuteParam!;
+        Assert.AreEqual("DragParam", canExecArgs.Parameter);
     }
 
     [TestMethod]
@@ -468,5 +473,109 @@ public class UnitTests : TestBase
 
         await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
         Assert.AreEqual("Card2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Add_WhenAllSwiped_ShowsNewItems()
+    {
+        var items = new ObservableCollection<string>() { "Item1" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        // Swipe the only item away
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.IsNull(swipeCardView.TopItem);
+
+        // Adding items should reinitialize the view
+        items.Add("Item2");
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Remove_AllItems_ClearsView()
+    {
+        var items = new ObservableCollection<string>() { "Item1", "Item2" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+
+        items.RemoveAt(0);
+        items.RemoveAt(0);
+
+        Assert.IsNull(swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Replace_UpdatesCurrentCard()
+    {
+        var items = new ObservableCollection<string>() { "Item1", "Item2" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+
+        // Replace the current top item
+        items[0] = "Replaced";
+        Assert.AreEqual("Replaced", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Add_BeforeCurrent_ShiftsIndices()
+    {
+        var items = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        // Swipe first card — now showing Item2
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        // Insert before current position — indices should shift
+        items.Insert(0, "NewFirst");
+        // TopItem should still be "Item2" (not shifted to "NewFirst")
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Remove_BeforeCurrent_ShiftsIndices()
+    {
+        var items = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        // Swipe first card — now showing Item2
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        // Remove Item1 (before current) — current should stay on "Item2"
+        items.RemoveAt(0);
+        // TopItem unchanged, index shifted
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void SwipedCommand_CanExecute_ReceivesEventArgs()
+    {
+        // CanExecute should receive the same EventArgs as Execute (breaking change from PR #6)
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2" };
+
+        object? receivedCanExecParam = null;
+        swipeCardView.SwipedCommandParameter = "MyParam";
+        swipeCardView.SwipedCommand = new Command<object>(
+            execute: _ => { },
+            canExecute: param =>
+            {
+                receivedCanExecParam = param;
+                return true;
+            });
+
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+
+        Assert.IsInstanceOfType(receivedCanExecParam, typeof(SwipedCardEventArgs));
+        var args = (SwipedCardEventArgs)receivedCanExecParam!;
+        Assert.AreEqual("MyParam", args.Parameter);
+        Assert.AreEqual(SwipeCardDirection.Right, args.Direction);
     }
 }
