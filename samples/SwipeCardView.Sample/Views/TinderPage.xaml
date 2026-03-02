@@ -27,19 +27,25 @@
                             Stroke="Transparent"
                             StrokeThickness="0"
                             Padding="0"
-                            BackgroundColor="White"
                             InputTransparent="True"
                             HorizontalOptions="FillAndExpand"
                             VerticalOptions="FillAndExpand">
                         <Border.Shadow>
                             <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.18" />
                         </Border.Shadow>
-                        <Grid RowDefinitions="*,Auto">
-                            <Image Grid.RowSpan="2" Source="{Binding Photo}" Aspect="AspectFill" />
+                        <Grid>
+                            <Image Source="{Binding Photo}" Aspect="AspectFill" />
 
-                            <!-- Gradient overlay at bottom for name -->
-                            <BoxView Grid.Row="1" Color="Black" Opacity="0.3"
-                                     InputTransparent="True" />
+                            <!-- Gradient overlay at bottom for name readability -->
+                            <BoxView VerticalOptions="End" HeightRequest="160"
+                                     InputTransparent="True">
+                                <BoxView.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientStop Color="Transparent" Offset="0.0" />
+                                        <GradientStop Color="#99000000" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </BoxView.Background>
+                            </BoxView>
 
                             <!-- LIKE overlay -->
                             <Border x:Name="LikeFrame"
@@ -84,7 +90,7 @@
                             </Border>
 
                             <!-- Name + Age -->
-                            <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Padding="20,16"
+                            <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,24"
                                                  InputTransparent="True">
                                 <Label TextColor="White" FontSize="24" FontAttributes="Bold">
                                     <Label.FormattedText>
