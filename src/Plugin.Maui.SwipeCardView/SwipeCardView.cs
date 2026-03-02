@@ -925,38 +925,43 @@ public class SwipeCardView : ContentView, IDisposable
             // Block touch input during animation
             _ignoreTouch = true;
 
-            // Position the new top card off-screen to the left, ready to slide in
-            newTopCard.BatchBegin();
-            newTopCard.BindingContext = previousItem;
-            newTopCard.Scale = 1.0;
-            newTopCard.Rotation = 0;
-            newTopCard.TranslationX = -Width;
-            newTopCard.TranslationY = -newTopCard.Y;
-            newTopCard.ZIndex = 1;
-            newTopCard.Opacity = 1;
-            newTopCard.IsVisible = true;
-            newTopCard.BatchCommit();
-
-            // Slide the new card in from the left.
-            // TranslateToAsync may throw in unit test context (no IAnimationManager),
-            // so fall through to the final state if animation fails.
             try
             {
-                await newTopCard.TranslateToAsync(0, -newTopCard.Y, AnimationLength, Easing.CubicOut);
+                // Position the new top card off-screen to the left, ready to slide in
+                newTopCard.BatchBegin();
+                newTopCard.BindingContext = previousItem;
+                newTopCard.Scale = 1.0;
+                newTopCard.Rotation = 0;
+                newTopCard.TranslationX = -Width;
+                newTopCard.TranslationY = -newTopCard.Y;
+                newTopCard.ZIndex = 1;
+                newTopCard.Opacity = 1;
+                newTopCard.IsVisible = true;
+                newTopCard.BatchCommit();
+
+                // Slide the new card in from the left.
+                // TranslateToAsync may throw in unit test context (no IAnimationManager),
+                // so fall through to the final state if animation fails.
+                try
+                {
+                    await newTopCard.TranslateToAsync(0, -newTopCard.Y, AnimationLength, Easing.CubicOut);
+                }
+                catch (ArgumentException)
+                {
+                    newTopCard.TranslationX = 0;
+                }
+
+                // Push the old top card behind as the back card
+                oldTopCard.BatchBegin();
+                oldTopCard.ZIndex = 0;
+                oldTopCard.Scale = 1.0;
+                oldTopCard.Opacity = 0;
+                oldTopCard.BatchCommit();
             }
-            catch (ArgumentException)
+            finally
             {
-                newTopCard.TranslationX = 0;
+                _ignoreTouch = false;
             }
-
-            // Push the old top card behind as the back card
-            oldTopCard.BatchBegin();
-            oldTopCard.ZIndex = 0;
-            oldTopCard.Scale = 1.0;
-            oldTopCard.Opacity = 0;
-            oldTopCard.BatchCommit();
-
-            _ignoreTouch = false;
         }
         else
         {
