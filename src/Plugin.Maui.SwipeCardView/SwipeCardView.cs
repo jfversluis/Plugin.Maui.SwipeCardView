@@ -91,7 +91,8 @@ public class SwipeCardView : ContentView, IDisposable
             nameof(BackCardScale),
             typeof(float),
             typeof(SwipeCardView),
-            DefaultBackCardScale);
+            DefaultBackCardScale,
+            validateValue: (_, value) => value is float f && f > 0f && f <= 1f);
 
     public static readonly BindableProperty CardRotationProperty =
         BindableProperty.Create(
@@ -158,6 +159,7 @@ public class SwipeCardView : ContentView, IDisposable
 
     private bool _disposed = false;
     private bool _programmaticSwipe = false;
+    private int _collectionVersion = 0;
     private INotifyCollectionChanged? _subscribedCollection;
 
     #endregion Private fields
@@ -175,94 +177,111 @@ public class SwipeCardView : ContentView, IDisposable
 
     #region Public Properties
 
+    /// <summary>Occurs when a card is swiped past the threshold distance.</summary>
     public event EventHandler<SwipedCardEventArgs>? Swiped;
 
+    /// <summary>Occurs continuously while a card is being dragged, reporting direction, position, and distance.</summary>
     public event EventHandler<DraggingCardEventArgs>? Dragging;
 
+    /// <summary>Gets or sets the data source for the card stack. Must implement <see cref="IList"/> (e.g. <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>).</summary>
     public IList ItemsSource
     {
         get => (IList)GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
 
+    /// <summary>Gets or sets the <see cref="DataTemplate"/> used to render each card.</summary>
     public DataTemplate ItemTemplate
     {
         get => (DataTemplate)GetValue(ItemTemplateProperty);
         set => SetValue(ItemTemplateProperty, value);
     }
 
+    /// <summary>Gets the data item of the currently displayed top card (one-way-to-source).</summary>
     public object? TopItem
     {
         get => GetValue(TopItemProperty);
         set => SetValue(TopItemProperty, value);
     }
 
+    /// <summary>Gets the data item of the previously swiped card, or null if at the first item (one-way-to-source).</summary>
     public object? PreviousItem
     {
         get => GetValue(PreviousItemProperty);
         set => SetValue(PreviousItemProperty, value);
     }
 
+    /// <summary>Gets or sets the command executed when a card is swiped. Receives <see cref="SwipedCardEventArgs"/>.</summary>
     public ICommand SwipedCommand
     {
         get => (ICommand)GetValue(SwipedCommandProperty);
         set => SetValue(SwipedCommandProperty, value);
     }
 
+    /// <summary>Gets or sets an optional parameter included in <see cref="SwipedCardEventArgs.Parameter"/>.</summary>
     public object SwipedCommandParameter
     {
         get => GetValue(SwipedCommandParameterProperty);
         set => SetValue(SwipedCommandParameterProperty, value);
     }
 
+    /// <summary>Gets or sets the command executed continuously while dragging. Receives <see cref="DraggingCardEventArgs"/>.</summary>
     public ICommand DraggingCommand
     {
         get => (ICommand)GetValue(DraggingCommandProperty);
         set => SetValue(DraggingCommandProperty, value);
     }
 
+    /// <summary>Gets or sets an optional parameter included in <see cref="DraggingCardEventArgs.Parameter"/>.</summary>
     public object DraggingCommandParameter
     {
         get => GetValue(DraggingCommandParameterProperty);
         set => SetValue(DraggingCommandParameterProperty, value);
     }
 
+    /// <summary>Gets or sets the minimum drag distance (in device-independent units) to trigger a swipe. Default is 100.</summary>
     public uint Threshold
     {
         get => (uint)GetValue(ThresholdProperty);
         set => SetValue(ThresholdProperty, value);
     }
 
+    /// <summary>Gets or sets which directions are allowed to complete a swipe. Default is all four.</summary>
     public SwipeCardDirection SupportedSwipeDirections
     {
         get => (SwipeCardDirection)GetValue(SupportedSwipeDirectionsProperty);
         set => SetValue(SupportedSwipeDirectionsProperty, value);
     }
 
+    /// <summary>Gets or sets which drag directions generate drag events. Default is all four.</summary>
     public SwipeCardDirection SupportedDraggingDirections
     {
         get => (SwipeCardDirection)GetValue(SupportedDraggingDirectionsProperty);
         set => SetValue(SupportedDraggingDirectionsProperty, value);
     }
 
+    /// <summary>Gets or sets the initial scale of the back card (0.0–1.0). Scales up to 1.0 as the top card is dragged. Default is 0.8.</summary>
     public float BackCardScale
     {
         get => (float)GetValue(BackCardScaleProperty);
         set => SetValue(BackCardScaleProperty, value);
     }
 
+    /// <summary>Gets or sets the maximum rotation angle (degrees) applied during horizontal drag. Default is 20.</summary>
     public float CardRotation
     {
         get => (float)GetValue(CardRotationProperty);
         set => SetValue(CardRotationProperty, value);
     }
 
+    /// <summary>Gets or sets the duration (milliseconds) of swipe and snap-back animations. Default is 250.</summary>
     public uint AnimationLength
     {
         get => (uint)GetValue(AnimationLengthProperty);
         set => SetValue(AnimationLengthProperty, value);
     }
 
+    /// <summary>Gets or sets whether the card stack loops back to the first item after the last card is swiped. Default is false.</summary>
     public bool LoopCards
     {
         get => (bool)GetValue(LoopCardsProperty);
@@ -273,6 +292,7 @@ public class SwipeCardView : ContentView, IDisposable
 
     #region Public Methods
 
+    /// <summary>Releases all resources used by the <see cref="SwipeCardView"/>.</summary>
     public void Dispose()
     {
         Dispose(true);
@@ -390,8 +410,6 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
-    #endregion Public Methods
-
     /// <summary>
     /// Goes back to the previously swiped card without animation. Returns true if successful,
     /// false if already at the first item or no items are available.
@@ -441,6 +459,8 @@ public class SwipeCardView : ContentView, IDisposable
         ShowPreviousCard(animated);
         return true;
     }
+
+    #endregion Public Methods
 
     #region Event Handlers
 
@@ -493,10 +513,27 @@ public class SwipeCardView : ContentView, IDisposable
         var swipeCardView = (SwipeCardView)bindable;
         swipeCardView.UnsubscribeCollectionChanged();
 
+        swipeCardView._collectionVersion++;
         swipeCardView._itemIndex = 0;
         swipeCardView._currentDisplayIndex = 0;
-        swipeCardView.Setup();
 
+        if (newValue == null)
+        {
+            // Clear all cards when ItemsSource is set to null
+            foreach (var card in swipeCardView._cards)
+            {
+                if (card != null)
+                {
+                    Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
+                    card.IsVisible = false;
+                }
+            }
+            swipeCardView.TopItem = null;
+            swipeCardView.PreviousItem = null;
+            return;
+        }
+
+        swipeCardView.Setup();
         swipeCardView.SubscribeCollectionChanged();
     }
 
@@ -525,6 +562,8 @@ public class SwipeCardView : ContentView, IDisposable
         {
             return;
         }
+
+        _collectionVersion++;
 
         switch (e.Action)
         {
@@ -613,6 +652,22 @@ public class SwipeCardView : ContentView, IDisposable
                     _currentDisplayIndex = Math.Max(0, _currentDisplayIndex - removeCount);
                     _itemIndex = Math.Max(0, _itemIndex - removeCount);
                 }
+                else if (e.OldStartingIndex > _currentDisplayIndex)
+                {
+                    // An item after current was removed — update _itemIndex and rebind back card if needed
+                    _itemIndex = Math.Min(_itemIndex, ItemsSource.Count);
+                    var backIdx = NextCardIndex(_topCardIndex);
+                    var backCard = _cards[backIdx];
+                    if (backCard.IsVisible && _currentDisplayIndex + 1 < ItemsSource.Count)
+                    {
+                        backCard.BindingContext = ItemsSource[_currentDisplayIndex + 1];
+                    }
+                    else if (backCard.IsVisible)
+                    {
+                        backCard.IsVisible = false;
+                        backCard.Opacity = 0;
+                    }
+                }
                 break;
 
             case NotifyCollectionChangedAction.Replace:
@@ -644,7 +699,7 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
-    private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
+    private async void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
         if (_disposed || _programmaticSwipe || ItemsSource == null || ItemsSource.Count == 0)
         {
@@ -662,11 +717,11 @@ public class SwipeCardView : ContentView, IDisposable
                 break;
 
             case GestureStatus.Completed:
-                _ = HandleTouchEnd();
+                await HandleTouchEnd();
                 break;
 
             case GestureStatus.Canceled:
-                _ = HandleTouchEnd();
+                await HandleTouchEnd();
                 break;
         }
     }
@@ -898,8 +953,16 @@ public class SwipeCardView : ContentView, IDisposable
                 topCard.TranslationX = 0;
                 topCard.TranslationY = -topCard.Y;
 
+                var collectionVersionBeforeSwipe = _collectionVersion;
                 SendSwiped(topCard, direction);
-                ShowNextCard();
+
+                // Only advance to next card if the collection wasn't modified by the Swiped handler.
+                // If a handler removed the swiped item (common pattern), OnItemSourceCollectionChanged
+                // already updated internal state — calling ShowNextCard would double-advance.
+                if (_collectionVersion == collectionVersionBeforeSwipe)
+                {
+                    ShowNextCard();
+                }
             }
             else
             {
@@ -984,9 +1047,15 @@ public class SwipeCardView : ContentView, IDisposable
 
         // If there are more cards to show, recycle the old top card
         // for the next item in the source
+        if (_itemIndex >= ItemsSource.Count && LoopCards)
+        {
+            _itemIndex = 0;
+        }
+
         if (_itemIndex < ItemsSource.Count)
         {
             // Cancel any lingering animations before recycling
+            if (oldTopCard == null) return;
             oldTopCard.CancelAnimations();
 
             // Push it behind the top card
@@ -1009,10 +1078,12 @@ public class SwipeCardView : ContentView, IDisposable
 
     private async void ShowPreviousCard(bool animated = false)
     {
-        if (ItemsSource == null || ItemsSource.Count == 0)
+        try
         {
-            return;
-        }
+            if (ItemsSource == null || ItemsSource.Count == 0)
+            {
+                return;
+            }
 
         // Use _currentDisplayIndex for O(1) index resolution (handles duplicates correctly)
         var previousItem = ItemsSource[_currentDisplayIndex - 1];
@@ -1112,6 +1183,11 @@ public class SwipeCardView : ContentView, IDisposable
         {
             // No dispatcher available (e.g. unit test context) — skip layout invalidation
         }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"ShowPreviousCard error: {ex}");
+        }
     }
 
     // Return the next card index from the top
@@ -1161,12 +1237,12 @@ public class SwipeCardView : ContentView, IDisposable
             cmd.Execute(args);
         }
 
-        Swiped?.Invoke(sender, args);
+        Swiped?.Invoke(this, args);
     }
 
     private void SendDragging(View sender, SwipeCardDirection direction, DraggingCardPosition position, double distanceDraggedX, double distanceDraggedY)
     {
-        var args = new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY);
+        var args = new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY, sender);
 
         var cmd = DraggingCommand;
         if (cmd != null && cmd.CanExecute(args))
@@ -1174,7 +1250,7 @@ public class SwipeCardView : ContentView, IDisposable
             cmd.Execute(args);
         }
 
-        Dragging?.Invoke(sender, args);
+        Dragging?.Invoke(this, args);
     }
 
     #endregion Private Methods
