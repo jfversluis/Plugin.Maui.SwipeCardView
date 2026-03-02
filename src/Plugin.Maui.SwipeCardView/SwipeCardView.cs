@@ -1106,6 +1106,11 @@ public class SwipeCardView : ContentView, IDisposable
         oldTopCard.CancelAnimations();
         newTopCard.CancelAnimations();
 
+        // Push the old top card behind BEFORE positioning the new card.
+        // Both cards must never share ZIndex=1, otherwise visual tree order
+        // determines rendering and the new card can end up behind the old one.
+        oldTopCard.ZIndex = 0;
+
         if (animated)
         {
             // Block touch input during animation
@@ -1137,9 +1142,8 @@ public class SwipeCardView : ContentView, IDisposable
                     newTopCard.TranslationX = 0;
                 }
 
-                // Push the old top card behind as the back card
+                // Hide the old top card now that animation is complete
                 oldTopCard.BatchBegin();
-                oldTopCard.ZIndex = 0;
                 oldTopCard.Scale = 1.0;
                 oldTopCard.Opacity = 0;
                 oldTopCard.BatchCommit();
@@ -1163,9 +1167,8 @@ public class SwipeCardView : ContentView, IDisposable
             newTopCard.IsVisible = true;
             newTopCard.BatchCommit();
 
-            // Push the old top card behind as the back card
+            // Hide the old top card
             oldTopCard.BatchBegin();
-            oldTopCard.ZIndex = 0;
             oldTopCard.Scale = 1.0;
             oldTopCard.Opacity = 0;
             oldTopCard.BatchCommit();
@@ -1174,7 +1177,10 @@ public class SwipeCardView : ContentView, IDisposable
         // Update indices
         _currentDisplayIndex--;
         _topCardIndex = newTopCardIndex;
-        _itemIndex = _currentDisplayIndex + 1; // _itemIndex points to the next unloaded item
+        // _itemIndex must skip past the item already loaded on the back card
+        // (the old top card retains ItemsSource[_currentDisplayIndex + 1]).
+        // Using +1 here caused the recycled card to duplicate the top card's content.
+        _itemIndex = _currentDisplayIndex + 2;
         TopItem = previousItem;
         PreviousItem = _currentDisplayIndex >= 1 ? ItemsSource[_currentDisplayIndex - 1] : null;
 
