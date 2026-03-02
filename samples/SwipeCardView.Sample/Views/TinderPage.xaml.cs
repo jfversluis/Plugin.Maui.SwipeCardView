@@ -33,9 +33,9 @@ public partial class TinderPage : ContentPage
         if (e.CardView == null) return;
 
         var view = e.CardView;
-        var nopeFrame = view.FindByName<Frame>("NopeFrame");
-        var likeFrame = view.FindByName<Frame>("LikeFrame");
-        var superLikeFrame = view.FindByName<Frame>("SuperLikeFrame");
+        var nopeFrame = view.FindByName<Border>("NopeFrame");
+        var likeFrame = view.FindByName<Border>("LikeFrame");
+        var superLikeFrame = view.FindByName<Border>("SuperLikeFrame");
         var threshold = (BindingContext as TinderPageViewModel)?.Threshold ?? 100;
 
         var draggedXPercent = e.DistanceDraggedX / threshold;

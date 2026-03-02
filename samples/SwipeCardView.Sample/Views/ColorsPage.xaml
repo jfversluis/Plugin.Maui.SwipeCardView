@@ -5,35 +5,70 @@
              x:Class="SwipeCardView.Sample.Views.ColorsPage"
              Shell.BackgroundColor="{x:StaticResource Primary}"
              Shell.TitleColor="{x:StaticResource White}"
-             Title="Colors Page">
+             Title="Colors">
 
-        <StackLayout Padding="10">
-            <swipeCardView:SwipeCardView
-                x:Name="SwipeCardView"
-                ItemsSource="{Binding CardItems}"
-                HorizontalOptions="FillAndExpand"
-                VerticalOptions="FillAndExpand"
-                SwipedCommand="{Binding SwipedCommand}"
-                DraggingCommand="{Binding DraggingCommand}"
-                Threshold="100">
-                <swipeCardView:SwipeCardView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" InputTransparent="True">
-                            <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                                <Label Text="{Binding .}" FontSize="Large" />
-                            </StackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </swipeCardView:SwipeCardView.ItemTemplate>
-            </swipeCardView:SwipeCardView>
-            <Label x:Name="DirectionLabel" HorizontalOptions="CenterAndExpand" />
-            <Label x:Name="PositionLabel" HorizontalOptions="CenterAndExpand" />
-            <Label Text="Drag slowly to see colors feedback" HorizontalOptions="CenterAndExpand"></Label>
-            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
-                <Button Text="Go Back" Clicked="OnGoBackClicked" />
-                <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
-                <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
-            </StackLayout>
-        </StackLayout>
+    <Grid RowDefinitions="*,Auto" Padding="16">
+        <swipeCardView:SwipeCardView
+            x:Name="SwipeCardView"
+            ItemsSource="{Binding CardItems}"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand"
+            SwipedCommand="{Binding SwipedCommand}"
+            DraggingCommand="{Binding DraggingCommand}"
+            Threshold="100">
+            <swipeCardView:SwipeCardView.ItemTemplate>
+                <DataTemplate>
+                    <Border StrokeShape="RoundRectangle 20"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
+                            BackgroundColor="#F8F8F8"
+                            Padding="0"
+                            InputTransparent="True">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,6" Radius="20" Opacity="0.15" />
+                        </Border.Shadow>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                            <Label Text="{Binding .}" FontSize="32" FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" TextColor="#333" />
+                            <Label Text="Drag to see colors change" FontSize="14"
+                                   HorizontalTextAlignment="Center" TextColor="{StaticResource Gray400}" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </swipeCardView:SwipeCardView.ItemTemplate>
+        </swipeCardView:SwipeCardView>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="8" Padding="0,12,0,0">
+            <!-- Status pills -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="12">
+                <Border StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                        BackgroundColor="#F0EBFF" Padding="12,6">
+                    <HorizontalStackLayout Spacing="4">
+                        <Label Text="Direction:" FontSize="12" TextColor="{StaticResource Gray400}" VerticalOptions="Center" />
+                        <Label x:Name="DirectionLabel" FontSize="12" FontAttributes="Bold"
+                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+                <Border StrokeShape="RoundRectangle 12" Stroke="Transparent"
+                        BackgroundColor="#F0EBFF" Padding="12,6">
+                    <HorizontalStackLayout Spacing="4">
+                        <Label Text="Position:" FontSize="12" TextColor="{StaticResource Gray400}" VerticalOptions="Center" />
+                        <Label x:Name="PositionLabel" FontSize="12" FontAttributes="Bold"
+                               TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Border>
+            </HorizontalStackLayout>
+
+            <!-- Buttons -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button Text="↩ Go Back" Clicked="OnGoBackClicked"
+                        BackgroundColor="#F0EBFF" TextColor="{StaticResource Primary}" FontSize="13" />
+                <Button Grid.Column="1" Text="Clear" Command="{Binding ClearItemsCommand}"
+                        BackgroundColor="#FFE8E5" TextColor="#E53935" FontSize="13" />
+                <Button Grid.Column="2" Text="Add 5" Command="{Binding AddItemsCommand}"
+                        FontSize="13" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
 
 </ContentPage>

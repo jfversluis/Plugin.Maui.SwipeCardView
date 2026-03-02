@@ -4,9 +4,10 @@
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
              Shell.BackgroundColor="{x:StaticResource Primary}"
              Shell.TitleColor="{x:StaticResource White}"
-             x:Class="SwipeCardView.Sample.Views.SimplePage">
+             x:Class="SwipeCardView.Sample.Views.SimplePage"
+             Title="Simple">
 
-    <StackLayout Padding="10">
+    <Grid RowDefinitions="*,Auto" Padding="16">
         <swipeCardView:SwipeCardView
                 ItemsSource="{Binding CardItems}"
                 SwipedCommand="{Binding SwipedCommand}"
@@ -14,17 +15,50 @@
                 VerticalOptions="FillAndExpand">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding .}" FontSize="Large" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" BackgroundColor="Beige" />
+                    <Border StrokeShape="RoundRectangle 20"
+                            Stroke="{StaticResource Gray200}"
+                            StrokeThickness="0"
+                            BackgroundColor="#F5F0FF"
+                            Padding="0"
+                            InputTransparent="True">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="16" Opacity="0.12" />
+                        </Border.Shadow>
+                        <Grid>
+                            <!-- Decorative circles -->
+                            <Ellipse Fill="#E8DEFF" WidthRequest="180" HeightRequest="180"
+                                     Opacity="0.5" HorizontalOptions="End" VerticalOptions="Start"
+                                     TranslationX="40" TranslationY="-40" InputTransparent="True" />
+                            <Ellipse Fill="#D4C4FF" WidthRequest="120" HeightRequest="120"
+                                     Opacity="0.3" HorizontalOptions="Start" VerticalOptions="End"
+                                     TranslationX="-30" TranslationY="30" InputTransparent="True" />
+                            <!-- Content -->
+                            <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                                <Label Text="👆" FontSize="48" HorizontalTextAlignment="Center" />
+                                <Label Text="{Binding .}" FontSize="28" FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" TextColor="#512BD4" />
+                                <Label Text="Swipe in any direction" FontSize="14"
+                                       HorizontalTextAlignment="Center" TextColor="{StaticResource Gray400}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </swipeCardView:SwipeCardView.ItemTemplate>
         </swipeCardView:SwipeCardView>
-        <Label Text="{Binding Message}" HorizontalOptions="CenterAndExpand" />
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center">
-            <Label Text="Loop Cards" />
-            <Switch IsToggled="{Binding IsLoopCards}"  />
-        </StackLayout>
-        <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
-        <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
-    </StackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="8" Padding="0,12,0,0">
+            <Label Text="{Binding Message}" HorizontalOptions="Center" FontSize="16"
+                   FontAttributes="Bold" TextColor="{StaticResource Primary}" />
+            <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12">
+                <Button Grid.Column="0" Text="Clear Items" Command="{Binding ClearItemsCommand}"
+                        BackgroundColor="#F0EBFF" TextColor="{StaticResource Primary}" />
+                <HorizontalStackLayout Grid.Column="1" Spacing="8" VerticalOptions="Center">
+                    <Label Text="Loop" VerticalOptions="Center" FontSize="13" TextColor="{StaticResource Gray400}" />
+                    <Switch IsToggled="{Binding IsLoopCards}" />
+                </HorizontalStackLayout>
+                <Button Grid.Column="2" Text="Add 5 Items" Command="{Binding AddItemsCommand}" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
 
 </ContentPage>

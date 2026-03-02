@@ -5,13 +5,9 @@
              x:Class="SwipeCardView.Sample.Views.BorderPage"
              Shell.BackgroundColor="{x:StaticResource Primary}"
              Shell.TitleColor="{x:StaticResource White}"
-             Title="Border Page">
+             Title="Border">
 
-    <StackLayout Padding="10">
-        <Label Text="Uses Border instead of Frame (Frame is obsolete)"
-               HorizontalOptions="Center"
-               FontSize="Small"
-               TextColor="Gray" />
+    <Grid RowDefinitions="*,Auto" Padding="16">
         <swipeCardView:SwipeCardView
             ItemsSource="{Binding CardItems}"
             SwipedCommand="{Binding SwipedCommand}"
@@ -20,44 +16,52 @@
             Threshold="100">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
-                    <!-- Border works as DataTemplate root (fixes issue #3).
-                         Required properties for Border (unlike Frame):
-                         - StrokeShape: defines shape (Border has no default)
-                         - BackgroundColor: fills interior (transparent by default)
-                         - InputTransparent: allows swipe gestures to pass through -->
-                    <Border StrokeShape="RoundRectangle 16"
-                            Stroke="{x:StaticResource Primary}"
-                            StrokeThickness="2"
+                    <Border StrokeShape="RoundRectangle 20"
+                            Stroke="{StaticResource Gray200}"
+                            StrokeThickness="1"
                             BackgroundColor="White"
-                            Padding="20"
+                            Padding="24"
                             InputTransparent="True">
                         <Border.Shadow>
-                            <Shadow Brush="Black" Offset="2,2" Radius="8" Opacity="0.3" />
+                            <Shadow Brush="Black" Offset="0,6" Radius="20" Opacity="0.15" />
                         </Border.Shadow>
                         <VerticalStackLayout HorizontalOptions="Center"
                                              VerticalOptions="Center"
-                                             Spacing="10">
-                            <Label Text="&#x1F4CC;"
-                                   FontSize="48"
-                                   HorizontalTextAlignment="Center" />
+                                             Spacing="12">
+                            <Border StrokeShape="RoundRectangle 28"
+                                    Stroke="Transparent"
+                                    BackgroundColor="#F0EBFF"
+                                    WidthRequest="56" HeightRequest="56"
+                                    HorizontalOptions="Center">
+                                <Label Text="📌"
+                                       FontSize="28"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Border>
                             <Label Text="{Binding .}"
-                                   FontSize="32"
+                                   FontSize="28"
                                    FontAttributes="Bold"
-                                   HorizontalTextAlignment="Center" />
-                            <Label Text="Swipe me!"
-                                   FontSize="Small"
-                                   TextColor="Gray"
+                                   HorizontalTextAlignment="Center"
+                                   TextColor="{StaticResource Primary}" />
+                            <Label Text="Border as DataTemplate root"
+                                   FontSize="13"
+                                   TextColor="{StaticResource Gray400}"
                                    HorizontalTextAlignment="Center" />
                         </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
             </swipeCardView:SwipeCardView.ItemTemplate>
         </swipeCardView:SwipeCardView>
-        <Label Text="{Binding Message}" HorizontalOptions="CenterAndExpand" />
-        <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
-            <Button Text="Clear Items" Command="{Binding ClearItemsCommand}" />
-            <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}" />
-        </StackLayout>
-    </StackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="8" Padding="0,12,0,0">
+            <Label Text="{Binding Message}" HorizontalOptions="Center" FontSize="14"
+                   FontAttributes="Bold" TextColor="{StaticResource Primary}" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Text="Clear" Command="{Binding ClearItemsCommand}"
+                        BackgroundColor="#FFE8E5" TextColor="#E53935" FontSize="13" />
+                <Button Grid.Column="1" Text="Add 5" Command="{Binding AddItemsCommand}" FontSize="13" />
+            </Grid>
+        </VerticalStackLayout>
+    </Grid>
 
 </ContentPage>

@@ -3,68 +3,150 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:swipeCardView="clr-namespace:Plugin.Maui.SwipeCardView;assembly=Plugin.Maui.SwipeCardView"
              x:Class="SwipeCardView.Sample.Views.TinderPage"
-             BackgroundColor="#EEE"
+             BackgroundColor="#F5F5F5"
              Shell.BackgroundColor="{x:StaticResource Primary}"
              Shell.TitleColor="{x:StaticResource White}"
              Title ="Tinder">
 
-        <StackLayout>
-            <swipeCardView:SwipeCardView
-                x:Name="SwipeCardView"
-                ItemsSource="{Binding Profiles}"
-                HorizontalOptions="FillAndExpand"
-                VerticalOptions="FillAndExpand"
-                Padding="10"
-                SwipedCommand="{Binding SwipedCommand}"
-                DraggingCommand="{Binding DraggingCommand}"
-                Threshold="{Binding Threshold}"
-                SupportedSwipeDirections="Left, Right, Up"
-                SupportedDraggingDirections="Left, Right, Up, Down"
-                LoopCards="True">
-                <swipeCardView:SwipeCardView.ItemTemplate>
-                    <DataTemplate>
-                        <StackLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                            <Frame CornerRadius="10" Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" InputTransparent="True">
-                                <AbsoluteLayout>
-                                    <Image Source="{Binding Photo}" Aspect="AspectFill"  AbsoluteLayout.LayoutBounds=".5,0.5,1,1" AbsoluteLayout.LayoutFlags="All" />
-                                    <Frame x:Name="LikeFrame"  BorderColor="#63DD99" BackgroundColor="Transparent" Padding="0" CornerRadius="20" AbsoluteLayout.LayoutBounds="0.1,.1, 150, 50"
-                                         AbsoluteLayout.LayoutFlags="PositionProportional"  Rotation="-20" Opacity="0">
-                                        <Label x:Name="LikeText" Text="LIKE" TextColor="#63DD99" BackgroundColor="Transparent" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" FontSize="32"></Label>
-                                    </Frame>
-                                    <Frame x:Name="NopeFrame" BorderColor="#FF6A4F" BackgroundColor="Transparent" Padding="0" CornerRadius="20" AbsoluteLayout.LayoutBounds="0.9,.1, 150, 50"
-                                       AbsoluteLayout.LayoutFlags="PositionProportional"  Rotation="20" Opacity="0">
-                                        <Label Text="NOPE" TextColor="#FF6A4F" BackgroundColor="Transparent" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" FontSize="32"></Label>
-                                    </Frame>
-                                    <Frame x:Name="SuperLikeFrame" BorderColor="#2196F3" BackgroundColor="Transparent" Padding="0" CornerRadius="20" AbsoluteLayout.LayoutBounds="0.5,.7, 150, 100"
-                                        AbsoluteLayout.LayoutFlags="PositionProportional"  Rotation="-20" Opacity="0">
-                                        <Label Text="SUPER LIKE" TextColor="#2196F3" BackgroundColor="Transparent" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" FontSize="32"></Label>
-                                    </Frame>
-                                    <Label FontSize="Large" FontAttributes="Bold" TextColor="White" AbsoluteLayout.LayoutBounds="0.1,0.95, 150, 30" AbsoluteLayout.LayoutFlags="PositionProportional">
-                                        <Label.FormattedText>
-                                            <FormattedString>
-                                                <Span Text="{Binding Name}"></Span>
-                                                <Span Text=", "></Span>
-                                                <Span Text="{Binding Age}"></Span>
-                                            </FormattedString>
-                                        </Label.FormattedText>
-                                    </Label>
-                                </AbsoluteLayout>
-                            </Frame>
-                        </StackLayout>
-                    </DataTemplate>
-                </swipeCardView:SwipeCardView.ItemTemplate>
-            </swipeCardView:SwipeCardView>
-            <HorizontalStackLayout HorizontalOptions="Center" Padding="10, 10, 10, 20" Spacing="30">
-                <StackLayout>
-                    <Button x:Name="nopeButton" ImageSource="ic_tinder_nope.png" Clicked="OnDislikeClicked" WidthRequest="60" HeightRequest="60" CornerRadius="30" BackgroundColor="White" Scale="1"></Button>
-                </StackLayout>
-                <StackLayout VerticalOptions="Center">
-                    <Button x:Name="superLikeButton" ImageSource="ic_tinder_superlike.png" Clicked="OnSuperLikeClicked" WidthRequest="50" HeightRequest="50" CornerRadius="25" BackgroundColor="White" Scale="1"></Button>
-                </StackLayout>
-                <StackLayout>
-                    <Button x:Name="likeButton" ImageSource="ic_tinder_like.png" Clicked="OnLikeClicked" WidthRequest="60" HeightRequest="60" CornerRadius="30" BackgroundColor="White" Scale="1"></Button>
-                </StackLayout>
-            </HorizontalStackLayout>
-        </StackLayout>
+    <Grid RowDefinitions="*,Auto">
+        <swipeCardView:SwipeCardView
+            x:Name="SwipeCardView"
+            ItemsSource="{Binding Profiles}"
+            HorizontalOptions="FillAndExpand"
+            VerticalOptions="FillAndExpand"
+            Padding="16"
+            SwipedCommand="{Binding SwipedCommand}"
+            DraggingCommand="{Binding DraggingCommand}"
+            Threshold="{Binding Threshold}"
+            SupportedSwipeDirections="Left, Right, Up"
+            SupportedDraggingDirections="Left, Right, Up, Down"
+            LoopCards="True">
+            <swipeCardView:SwipeCardView.ItemTemplate>
+                <DataTemplate>
+                    <Border StrokeShape="RoundRectangle 20"
+                            Stroke="Transparent"
+                            StrokeThickness="0"
+                            Padding="0"
+                            InputTransparent="True"
+                            HorizontalOptions="FillAndExpand"
+                            VerticalOptions="FillAndExpand">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.18" />
+                        </Border.Shadow>
+                        <Grid>
+                            <Image Source="{Binding Photo}" Aspect="AspectFill" />
+
+                            <!-- Gradient overlay at bottom for name -->
+                            <BoxView Color="Black" Opacity="0.3"
+                                     VerticalOptions="End" HeightRequest="120"
+                                     InputTransparent="True" />
+
+                            <!-- LIKE overlay -->
+                            <Border x:Name="LikeFrame"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="#63DD99" StrokeThickness="3"
+                                    BackgroundColor="Transparent"
+                                    Padding="16,8" Opacity="0"
+                                    HorizontalOptions="Start" VerticalOptions="Start"
+                                    Margin="24,32" Rotation="-20"
+                                    InputTransparent="True">
+                                <Label x:Name="LikeText" Text="LIKE" TextColor="#63DD99"
+                                       FontSize="32" FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                            </Border>
+
+                            <!-- NOPE overlay -->
+                            <Border x:Name="NopeFrame"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="#FF6A4F" StrokeThickness="3"
+                                    BackgroundColor="Transparent"
+                                    Padding="16,8" Opacity="0"
+                                    HorizontalOptions="End" VerticalOptions="Start"
+                                    Margin="24,32" Rotation="20"
+                                    InputTransparent="True">
+                                <Label Text="NOPE" TextColor="#FF6A4F"
+                                       FontSize="32" FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                            </Border>
+
+                            <!-- SUPER LIKE overlay -->
+                            <Border x:Name="SuperLikeFrame"
+                                    StrokeShape="RoundRectangle 12"
+                                    Stroke="#2196F3" StrokeThickness="3"
+                                    BackgroundColor="Transparent"
+                                    Padding="16,8" Opacity="0"
+                                    HorizontalOptions="Center" VerticalOptions="Center"
+                                    Rotation="-20"
+                                    InputTransparent="True">
+                                <Label Text="SUPER LIKE" TextColor="#2196F3"
+                                       FontSize="32" FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                            </Border>
+
+                            <!-- Name + Age -->
+                            <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,20"
+                                                 InputTransparent="True">
+                                <Label TextColor="White" FontSize="24" FontAttributes="Bold">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Name}" />
+                                            <Span Text=", " />
+                                            <Span Text="{Binding Age}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </swipeCardView:SwipeCardView.ItemTemplate>
+        </swipeCardView:SwipeCardView>
+
+        <!-- Action buttons -->
+        <HorizontalStackLayout Grid.Row="1" HorizontalOptions="Center"
+                               Padding="10,10,10,24" Spacing="24">
+            <Border x:Name="nopeButton" StrokeShape="RoundRectangle 30"
+                    Stroke="#FFE8E5" StrokeThickness="2"
+                    BackgroundColor="White" WidthRequest="60" HeightRequest="60"
+                    HorizontalOptions="Center" VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDislikeClicked" />
+                </Border.GestureRecognizers>
+                <Image Source="ic_tinder_nope.png" WidthRequest="28" HeightRequest="28"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+
+            <Border x:Name="superLikeButton" StrokeShape="RoundRectangle 24"
+                    Stroke="#E3F2FD" StrokeThickness="2"
+                    BackgroundColor="White" WidthRequest="48" HeightRequest="48"
+                    HorizontalOptions="Center" VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSuperLikeClicked" />
+                </Border.GestureRecognizers>
+                <Image Source="ic_tinder_superlike.png" WidthRequest="22" HeightRequest="22"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+
+            <Border x:Name="likeButton" StrokeShape="RoundRectangle 30"
+                    Stroke="#E3F8ED" StrokeThickness="2"
+                    BackgroundColor="White" WidthRequest="60" HeightRequest="60"
+                    HorizontalOptions="Center" VerticalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.1" />
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnLikeClicked" />
+                </Border.GestureRecognizers>
+                <Image Source="ic_tinder_like.png" WidthRequest="28" HeightRequest="28"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+        </HorizontalStackLayout>
+    </Grid>
 
 </ContentPage>

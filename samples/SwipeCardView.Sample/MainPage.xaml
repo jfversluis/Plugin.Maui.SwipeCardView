@@ -4,17 +4,119 @@
              x:Class="SwipeCardView.Sample.MainPage"
              Shell.BackgroundColor="{x:StaticResource Primary}"
              Shell.TitleColor="{x:StaticResource White}"
-             Title="SwipeCardView Samples">
+             Title="SwipeCardView">
 
-    <VerticalStackLayout Spacing="5"
-        HorizontalOptions="Center"
-        VerticalOptions="Center">
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="20,24">
 
-        <Button Text="Simple Page" Clicked="OnSimplePageClicked" />
-        <Button Text="Tinder Page" Clicked="OnTinderPageClicked" />
-        <Button Text="Customizable Page" Clicked="OnCustomizablePageClicked" />
-        <Button Text="Colors Page" Clicked="OnColorsPageClicked" />
-        <Button Text="Border Page" Clicked="OnBorderPageClicked" />
-    </VerticalStackLayout>
+            <!-- Hero -->
+            <VerticalStackLayout Spacing="4" Padding="0,0,0,8">
+                <Label Text="👆 SwipeCardView"
+                       FontSize="28"
+                       FontAttributes="Bold" />
+                <Label Text="Tinder-style swipeable cards for .NET MAUI"
+                       FontSize="14"
+                       TextColor="{StaticResource Gray400}" />
+            </VerticalStackLayout>
+
+            <!-- Sample Cards -->
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    BackgroundColor="#F0EBFF"
+                    Padding="20"
+                    HeightRequest="90">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSimplePageClicked" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                    <Label Text="📝" FontSize="36" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Simple" FontSize="18" FontAttributes="Bold" TextColor="#512BD4" />
+                        <Label Text="Basic swipe with data binding" FontSize="13" TextColor="#7B6DAA" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" FontSize="28" TextColor="#512BD4" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    BackgroundColor="#FFE8E5"
+                    Padding="20"
+                    HeightRequest="90">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTinderPageClicked" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                    <Label Text="❤️" FontSize="36" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Tinder" FontSize="18" FontAttributes="Bold" TextColor="#E53935" />
+                        <Label Text="Full Tinder UI with photo cards" FontSize="13" TextColor="#C0837F" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" FontSize="28" TextColor="#E53935" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    BackgroundColor="#E3F8ED"
+                    Padding="20"
+                    HeightRequest="90">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnColorsPageClicked" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                    <Label Text="🎨" FontSize="36" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Colors" FontSize="18" FontAttributes="Bold" TextColor="#2E7D4F" />
+                        <Label Text="Drag feedback with color changes" FontSize="13" TextColor="#6DA784" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" FontSize="28" TextColor="#2E7D4F" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    BackgroundColor="#E8F4FD"
+                    Padding="20"
+                    HeightRequest="90">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnBorderPageClicked" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                    <Label Text="🔲" FontSize="36" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Border" FontSize="18" FontAttributes="Bold" TextColor="#1565C0" />
+                        <Label Text="Border as DataTemplate root" FontSize="13" TextColor="#7BA4C7" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" FontSize="28" TextColor="#1565C0" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    BackgroundColor="#FFF3E0"
+                    Padding="20"
+                    HeightRequest="90">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnCustomizablePageClicked" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                    <Label Text="⚙️" FontSize="36" VerticalOptions="Center" />
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Customizable" FontSize="18" FontAttributes="Bold" TextColor="#E65100" />
+                        <Label Text="Tweak every property at runtime" FontSize="13" TextColor="#C09060" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="2" Text="›" FontSize="28" TextColor="#E65100" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- Footer -->
+            <Label Text="v1.0.0 · Plugin.Maui.SwipeCardView"
+                   FontSize="12"
+                   TextColor="{StaticResource Gray300}"
+                   HorizontalOptions="Center"
+                   Margin="0,8,0,0" />
+        </VerticalStackLayout>
+    </ScrollView>
 
 </ContentPage>

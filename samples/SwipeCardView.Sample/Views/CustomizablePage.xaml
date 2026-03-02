@@ -5,9 +5,10 @@
              x:Class="SwipeCardView.Sample.Views.CustomizablePage"
              Shell.BackgroundColor="{x:StaticResource Primary}"
              Shell.TitleColor="{x:StaticResource White}"
-             Title="Customizable Page">
+             Title="Customizable">
 
-    <StackLayout Padding="10">
+    <Grid RowDefinitions="3*,Auto,2*" Padding="16" RowSpacing="8">
+        <!-- Card area -->
         <swipeCardView:SwipeCardView
             x:Name="SwipeCardView"
             HorizontalOptions="FillAndExpand"
@@ -25,80 +26,133 @@
             LoopCards="{Binding IsLoopCards}">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
-                    <Frame CornerRadius="10" Padding="0" BorderColor="Orange" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="Beige" InputTransparent="True">
-                        <StackLayout HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                            <Label Text="{Binding .}" FontSize="Large" />
-                            <Label x:Name="DirectionLabel" />
-                            <Label x:Name="PositionLabel" />
-                        </StackLayout>
-                    </Frame>
+                    <Border StrokeShape="RoundRectangle 16"
+                            Stroke="#E0D5F5"
+                            StrokeThickness="2"
+                            BackgroundColor="#FDFBFF"
+                            Padding="0"
+                            InputTransparent="True"
+                            HorizontalOptions="FillAndExpand"
+                            VerticalOptions="FillAndExpand">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,4" Radius="16" Opacity="0.1" />
+                        </Border.Shadow>
+                        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="4">
+                            <Label Text="{Binding .}" FontSize="28" FontAttributes="Bold"
+                                   HorizontalTextAlignment="Center" TextColor="{StaticResource Primary}" />
+                            <Label x:Name="DirectionLabel" FontSize="13"
+                                   HorizontalTextAlignment="Center" TextColor="{StaticResource Gray400}" />
+                            <Label x:Name="PositionLabel" FontSize="13"
+                                   HorizontalTextAlignment="Center" TextColor="{StaticResource Gray400}" />
+                        </VerticalStackLayout>
+                    </Border>
                 </DataTemplate>
             </swipeCardView:SwipeCardView.ItemTemplate>
         </swipeCardView:SwipeCardView>
 
-        <StackLayout Spacing="1">
-            <StackLayout Orientation="Horizontal">
-                <Label Text="TopItem: "></Label>
-                <Label Text="{Binding TopItem}"></Label>
-            </StackLayout>
+        <!-- Top item badge -->
+        <Border Grid.Row="1" StrokeShape="RoundRectangle 10" Stroke="Transparent"
+                BackgroundColor="#F0EBFF" Padding="12,6" HorizontalOptions="Center">
+            <HorizontalStackLayout Spacing="4">
+                <Label Text="TopItem:" FontSize="12" TextColor="{StaticResource Gray400}" VerticalOptions="Center" />
+                <Label Text="{Binding TopItem}" FontSize="12" FontAttributes="Bold"
+                       TextColor="{StaticResource Primary}" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
 
-            <StackLayout>
-                <Label Text="Supported Dragging Directions:"></Label>
-                <StackLayout Orientation="Horizontal">
-                    <Label Text="Right" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsDraggingRightSupported}"></Switch>
-                    <Label Text="Left" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsDraggingLeftSupported}"></Switch>
-                    <Label Text="Up" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsDraggingUpSupported}"></Switch>
-                    <Label Text="Down" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsDraggingDownSupported}"></Switch>
-                </StackLayout>
-            </StackLayout>
+        <!-- Controls panel -->
+        <ScrollView Grid.Row="2">
+            <VerticalStackLayout Spacing="10">
+                <!-- Dragging directions -->
+                <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource Gray100}"
+                        BackgroundColor="Transparent" Padding="12,8">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Dragging Directions" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray500}" />
+                        <FlexLayout JustifyContent="SpaceBetween">
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsDraggingRightSupported}" />
+                                <Label Text="R" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsDraggingLeftSupported}" />
+                                <Label Text="L" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsDraggingUpSupported}" />
+                                <Label Text="U" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsDraggingDownSupported}" />
+                                <Label Text="D" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </Border>
 
-            <StackLayout>
-                <Label Text="Supported Swipe Directions:"></Label>
-                <StackLayout Orientation="Horizontal">
-                    <Label Text="Right" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsSwipeRightSupported}"></Switch>
-                    <Label Text="Left" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsSwipeLeftSupported}"></Switch>
-                    <Label Text="Up" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsSwipeUpSupported}"></Switch>
-                    <Label Text="Down" VerticalTextAlignment="Center"></Label>
-                    <Switch IsToggled="{Binding IsSwipeDownSupported}"></Switch>
-                </StackLayout>
-            </StackLayout>
+                <!-- Swipe directions -->
+                <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource Gray100}"
+                        BackgroundColor="Transparent" Padding="12,8">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Swipe Directions" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray500}" />
+                        <FlexLayout JustifyContent="SpaceBetween">
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsSwipeRightSupported}" />
+                                <Label Text="R" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsSwipeLeftSupported}" />
+                                <Label Text="L" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsSwipeUpSupported}" />
+                                <Label Text="U" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="2">
+                                <Switch IsToggled="{Binding IsSwipeDownSupported}" />
+                                <Label Text="D" VerticalOptions="Center" FontSize="12" />
+                            </HorizontalStackLayout>
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </Border>
 
-            <StackLayout Orientation="Horizontal">
-                <Label Text="Threshold:" VerticalOptions="Center"></Label>
-                <Entry Text="{Binding Threshold}" Keyboard="Numeric" VerticalOptions="Center" WidthRequest="50"></Entry>
-                <Label Text="Loop Cards:" VerticalTextAlignment="Center"></Label>
-                <Switch IsToggled="{Binding IsLoopCards}"></Switch>
-            </StackLayout>
+                <!-- Numeric settings -->
+                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                    <VerticalStackLayout>
+                        <Label Text="Threshold" FontSize="10" TextColor="{StaticResource Gray400}" />
+                        <Entry Text="{Binding Threshold}" Keyboard="Numeric" FontSize="14" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1">
+                        <Label Text="Anim (ms)" FontSize="10" TextColor="{StaticResource Gray400}" />
+                        <Entry Text="{Binding AnimationLength}" Keyboard="Numeric" FontSize="14" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="2">
+                        <Label Text="Scale" FontSize="10" TextColor="{StaticResource Gray400}" />
+                        <Entry Text="{Binding BackCardScale}" Keyboard="Numeric" FontSize="14" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="3" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="4">
+                            <Label Text="Loop" FontSize="12" VerticalOptions="Center" TextColor="{StaticResource Gray400}" />
+                            <Switch IsToggled="{Binding IsLoopCards}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+                </Grid>
 
-            <StackLayout Orientation="Horizontal">
-                <StackLayout Orientation="Horizontal">
-                    <Label Text="AnimationLength:" VerticalOptions="Center"></Label>
-                    <Entry Text="{Binding AnimationLength}" Keyboard="Numeric" VerticalOptions="Center" WidthRequest="50"></Entry>
-                </StackLayout>
+                <!-- Rotation slider -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Label Text="Rotation" VerticalOptions="Center" FontSize="12" TextColor="{StaticResource Gray400}" />
+                    <Slider Grid.Column="1" Minimum="0" Maximum="360" Value="{Binding CardRotation}" />
+                    <Label Grid.Column="2" Text="{Binding CardRotation, StringFormat='{0:F0}°'}"
+                           VerticalOptions="Center" FontSize="12" FontAttributes="Bold"
+                           TextColor="{StaticResource Primary}" WidthRequest="36" />
+                </Grid>
 
-                <StackLayout Orientation="Horizontal">
-                    <Label Text="BackCardScale:" VerticalOptions="Center"></Label>
-                    <Entry Text="{Binding BackCardScale}" Keyboard="Numeric" VerticalOptions="Center" WidthRequest="50"></Entry>
-                </StackLayout>
-            </StackLayout>
-
-            <StackLayout Orientation="Horizontal">
-                <Label Text="Rotation:" VerticalOptions="Center"></Label>
-                <Label Text="{Binding CardRotation}" WidthRequest="50"></Label>
-                <Slider Minimum="0" Maximum="360" Value="{Binding CardRotation}" MinimumTrackColor="DeepPink" MaximumTrackColor="Blue" HorizontalOptions="FillAndExpand" ></Slider>
-            </StackLayout>
-
-            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
-                <Button Text="Clear Items" Command="{Binding ClearItemsCommand}"></Button>
-                <Button Text="Add 5 Items" Command="{Binding AddItemsCommand}"></Button>
-            </StackLayout>
-        </StackLayout>
-    </StackLayout>
+                <!-- Action buttons -->
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Text="Clear" Command="{Binding ClearItemsCommand}"
+                            BackgroundColor="#FFE8E5" TextColor="#E53935" FontSize="13" />
+                    <Button Grid.Column="1" Text="Add 5" Command="{Binding AddItemsCommand}" FontSize="13" />
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
