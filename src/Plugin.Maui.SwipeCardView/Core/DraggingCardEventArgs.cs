@@ -5,7 +5,14 @@ namespace Plugin.Maui.SwipeCardView.Core;
 /// <summary>Arguments for drag events raised while a card is being dragged.</summary>
 public class DraggingCardEventArgs : System.EventArgs
 {
-    public DraggingCardEventArgs(object item, object parameter, SwipeCardDirection direction, DraggingCardPosition position, double distanceDraggedX, double distanceDraggedY, View? cardView = null)
+    /// <summary>Creates a new instance without a card view reference.</summary>
+    public DraggingCardEventArgs(object item, object parameter, SwipeCardDirection direction, DraggingCardPosition position, double distanceDraggedX, double distanceDraggedY)
+        : this(item, parameter, direction, position, distanceDraggedX, distanceDraggedY, null)
+    {
+    }
+
+    /// <summary>Creates a new instance with a card view reference.</summary>
+    public DraggingCardEventArgs(object item, object parameter, SwipeCardDirection direction, DraggingCardPosition position, double distanceDraggedX, double distanceDraggedY, View? cardView)
     {
         Item = item;
         Parameter = parameter;
