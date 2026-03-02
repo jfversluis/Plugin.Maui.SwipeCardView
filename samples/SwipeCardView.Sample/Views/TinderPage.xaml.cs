@@ -13,28 +13,30 @@ public partial class TinderPage : ContentPage
         SwipeCardView.Dragging += OnDragging;
     }
 
-    private void OnDislikeClicked(object sender, EventArgs e)
+    private async void OnDislikeClicked(object sender, EventArgs e)
     {
-        SwipeCardView.InvokeSwipe(SwipeCardDirection.Left);
+        await SwipeCardView.InvokeSwipe(SwipeCardDirection.Left);
     }
 
-    private void OnSuperLikeClicked(object sender, EventArgs e)
+    private async void OnSuperLikeClicked(object sender, EventArgs e)
     {
-        SwipeCardView.InvokeSwipe(SwipeCardDirection.Up);
+        await SwipeCardView.InvokeSwipe(SwipeCardDirection.Up);
     }
 
-    private void OnLikeClicked(object sender, EventArgs e)
+    private async void OnLikeClicked(object sender, EventArgs e)
     {
-        SwipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        await SwipeCardView.InvokeSwipe(SwipeCardDirection.Right);
     }
 
     private void OnDragging(object sender, DraggingCardEventArgs e)
     {
-        var view = (View)sender;
+        if (e.CardView == null) return;
+
+        var view = e.CardView;
         var nopeFrame = view.FindByName<Frame>("NopeFrame");
         var likeFrame = view.FindByName<Frame>("LikeFrame");
         var superLikeFrame = view.FindByName<Frame>("SuperLikeFrame");
-        var threshold = (BindingContext as TinderPageViewModel).Threshold;
+        var threshold = (BindingContext as TinderPageViewModel)?.Threshold ?? 100;
 
         var draggedXPercent = e.DistanceDraggedX / threshold;
 

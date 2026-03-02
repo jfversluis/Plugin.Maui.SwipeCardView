@@ -1,6 +1,6 @@
 ﻿namespace Plugin.Maui.SwipeCardView.Core;
 
-/// <summary>Arguments for swipe events.</summary>
+/// <summary>Arguments for swipe events raised when a card is swiped past the threshold.</summary>
 public class SwipedCardEventArgs : System.EventArgs
 {
     public SwipedCardEventArgs(object item, object parameter,
@@ -11,12 +11,12 @@ public class SwipedCardEventArgs : System.EventArgs
         Direction = direction;
     }
 
-    /// <summary>Gets the item parameter.</summary>
-    public object Item { get; private set; }
+    /// <summary>Gets the data item bound to the swiped card.</summary>
+    public object Item { get; }
 
     /// <summary>Gets the command parameter.</summary>
-    public object Parameter { get; private set; }
+    public object Parameter { get; }
 
-    /// <summary>Gets the direction of the swipe.</summary>
-    public SwipeCardDirection Direction { get; private set; }
+    /// <summary>Gets the direction the card was swiped.</summary>
+    public SwipeCardDirection Direction { get; }
 }
