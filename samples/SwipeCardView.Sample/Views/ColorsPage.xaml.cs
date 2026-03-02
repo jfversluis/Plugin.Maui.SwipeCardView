@@ -70,6 +70,6 @@ public partial class ColorsPage : ContentPage
 
     private void OnGoBackClicked(object? sender, EventArgs e)
     {
-        SwipeCardView.GoBack();
+        SwipeCardView.GoBack(animated: true);
     }
 }

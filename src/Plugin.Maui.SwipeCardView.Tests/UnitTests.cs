@@ -282,6 +282,21 @@ public class UnitTests : TestBase
     }
 
     [TestMethod]
+    public async Task GoBack_Animated_ShouldReturnToPreviousCard()
+    {
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+
+        await swipeCardView.InvokeSwipe(SwipeCardDirection.Right);
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        var result = swipeCardView.GoBack(animated: true);
+        Assert.IsTrue(result);
+        // In unit tests, animation completes instantly (no dispatcher)
+        Assert.AreEqual("Item1", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
     public void GoBack_AtFirstItem_ShouldReturnFalse()
     {
         var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
