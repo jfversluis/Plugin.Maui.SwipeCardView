@@ -27,18 +27,18 @@
                             Stroke="Transparent"
                             StrokeThickness="0"
                             Padding="0"
+                            BackgroundColor="White"
                             InputTransparent="True"
                             HorizontalOptions="FillAndExpand"
                             VerticalOptions="FillAndExpand">
                         <Border.Shadow>
                             <Shadow Brush="Black" Offset="0,8" Radius="24" Opacity="0.18" />
                         </Border.Shadow>
-                        <Grid>
-                            <Image Source="{Binding Photo}" Aspect="AspectFill" />
+                        <Grid RowDefinitions="*,Auto">
+                            <Image Grid.RowSpan="2" Source="{Binding Photo}" Aspect="AspectFill" />
 
                             <!-- Gradient overlay at bottom for name -->
-                            <BoxView Color="Black" Opacity="0.3"
-                                     VerticalOptions="End" HeightRequest="120"
+                            <BoxView Grid.Row="1" Color="Black" Opacity="0.3"
                                      InputTransparent="True" />
 
                             <!-- LIKE overlay -->
@@ -84,7 +84,7 @@
                             </Border>
 
                             <!-- Name + Age -->
-                            <VerticalStackLayout VerticalOptions="End" Padding="20,0,20,20"
+                            <VerticalStackLayout Grid.Row="1" VerticalOptions="Center" Padding="20,16"
                                                  InputTransparent="True">
                                 <Label TextColor="White" FontSize="24" FontAttributes="Bold">
                                     <Label.FormattedText>
