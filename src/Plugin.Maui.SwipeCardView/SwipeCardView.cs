@@ -379,10 +379,20 @@ public class SwipeCardView : ContentView, IDisposable
     #endregion Public Methods
 
     /// <summary>
-    /// Goes back to the previously swiped card. Returns true if successful,
+    /// Goes back to the previously swiped card without animation. Returns true if successful,
     /// false if already at the first item or no items are available.
     /// </summary>
     public bool GoBack()
+    {
+        return GoBack(false);
+    }
+
+    /// <summary>
+    /// Goes back to the previously swiped card. Returns true if successful,
+    /// false if already at the first item or no items are available.
+    /// </summary>
+    /// <param name="animated">When true, the previous card slides in from the left with animation.</param>
+    public bool GoBack(bool animated)
     {
         if (_disposed || _ignoreTouch || _programmaticSwipe)
         {
@@ -414,7 +424,7 @@ public class SwipeCardView : ContentView, IDisposable
             return false;
         }
 
-        ShowPreviousCard();
+        ShowPreviousCard(animated);
         return true;
     }
 
@@ -890,7 +900,7 @@ public class SwipeCardView : ContentView, IDisposable
         }
     }
 
-    private void ShowPreviousCard()
+    private async void ShowPreviousCard(bool animated = false)
     {
         if (ItemsSource == null || ItemsSource.Count == 0)
         {
@@ -910,24 +920,70 @@ public class SwipeCardView : ContentView, IDisposable
         oldTopCard.CancelAnimations();
         newTopCard.CancelAnimations();
 
-        // Set up the new top card with the previous item
-        newTopCard.BatchBegin();
-        newTopCard.BindingContext = previousItem;
-        newTopCard.Scale = 1.0;
-        newTopCard.Rotation = 0;
-        newTopCard.TranslationX = 0;
-        newTopCard.TranslationY = -newTopCard.Y;
-        newTopCard.ZIndex = 1;
-        newTopCard.Opacity = 1;
-        newTopCard.IsVisible = true;
-        newTopCard.BatchCommit();
+        if (animated)
+        {
+            // Block touch input during animation
+            _ignoreTouch = true;
 
-        // Push the old top card behind as the back card
-        oldTopCard.BatchBegin();
-        oldTopCard.ZIndex = 0;
-        oldTopCard.Scale = 1.0;
-        oldTopCard.Opacity = 0;
-        oldTopCard.BatchCommit();
+            try
+            {
+                // Position the new top card off-screen to the left, ready to slide in
+                newTopCard.BatchBegin();
+                newTopCard.BindingContext = previousItem;
+                newTopCard.Scale = 1.0;
+                newTopCard.Rotation = 0;
+                newTopCard.TranslationX = -Width;
+                newTopCard.TranslationY = -newTopCard.Y;
+                newTopCard.ZIndex = 1;
+                newTopCard.Opacity = 1;
+                newTopCard.IsVisible = true;
+                newTopCard.BatchCommit();
+
+                // Slide the new card in from the left.
+                // TranslateToAsync may throw in unit test context (no IAnimationManager),
+                // so fall through to the final state if animation fails.
+                try
+                {
+                    await newTopCard.TranslateToAsync(0, -newTopCard.Y, AnimationLength, Easing.CubicOut);
+                }
+                catch (ArgumentException)
+                {
+                    newTopCard.TranslationX = 0;
+                }
+
+                // Push the old top card behind as the back card
+                oldTopCard.BatchBegin();
+                oldTopCard.ZIndex = 0;
+                oldTopCard.Scale = 1.0;
+                oldTopCard.Opacity = 0;
+                oldTopCard.BatchCommit();
+            }
+            finally
+            {
+                _ignoreTouch = false;
+            }
+        }
+        else
+        {
+            // Instant swap (no animation)
+            newTopCard.BatchBegin();
+            newTopCard.BindingContext = previousItem;
+            newTopCard.Scale = 1.0;
+            newTopCard.Rotation = 0;
+            newTopCard.TranslationX = 0;
+            newTopCard.TranslationY = -newTopCard.Y;
+            newTopCard.ZIndex = 1;
+            newTopCard.Opacity = 1;
+            newTopCard.IsVisible = true;
+            newTopCard.BatchCommit();
+
+            // Push the old top card behind as the back card
+            oldTopCard.BatchBegin();
+            oldTopCard.ZIndex = 0;
+            oldTopCard.Scale = 1.0;
+            oldTopCard.Opacity = 0;
+            oldTopCard.BatchCommit();
+        }
 
         // Update indices
         _currentDisplayIndex--;
