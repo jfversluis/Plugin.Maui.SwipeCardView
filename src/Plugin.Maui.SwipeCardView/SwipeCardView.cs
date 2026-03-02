@@ -158,6 +158,7 @@ public class SwipeCardView : ContentView, IDisposable
 
     private bool _disposed = false;
     private bool _programmaticSwipe = false;
+    private INotifyCollectionChanged? _subscribedCollection;
 
     #endregion Private fields
 
@@ -274,12 +275,28 @@ public class SwipeCardView : ContentView, IDisposable
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases resources used by the SwipeCardView. Override in derived classes
+    /// to add custom cleanup logic (always call base.Dispose(disposing)).
+    /// </summary>
+    /// <param name="disposing">True if called from Dispose(), false if from finalizer.</param>
+    protected virtual void Dispose(bool disposing)
+    {
         if (_disposed)
         {
             return;
         }
 
         _disposed = true;
+
+        if (!disposing)
+        {
+            return;
+        }
 
         foreach (var card in _cards)
         {
@@ -295,10 +312,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         GestureRecognizers.Clear();
 
-        if (ItemsSource is INotifyCollectionChanged observable)
-        {
-            observable.CollectionChanged -= OnItemSourceCollectionChanged;
-        }
+        UnsubscribeCollectionChanged();
     }
 
     /// <summary>
@@ -477,56 +491,123 @@ public class SwipeCardView : ContentView, IDisposable
     private static void OnItemsSourcePropertyChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var swipeCardView = (SwipeCardView)bindable;
-        var observable = oldValue as INotifyCollectionChanged;
-        if (observable != null)
-        {
-            observable.CollectionChanged -= swipeCardView.OnItemSourceCollectionChanged;
-        }
+        swipeCardView.UnsubscribeCollectionChanged();
 
-        observable = newValue as INotifyCollectionChanged;
         swipeCardView._itemIndex = 0;
         swipeCardView._currentDisplayIndex = 0;
         swipeCardView.Setup();
-        if (observable != null)
+
+        swipeCardView.SubscribeCollectionChanged();
+    }
+
+    private void SubscribeCollectionChanged()
+    {
+        if (ItemsSource is INotifyCollectionChanged observable)
         {
-            observable.CollectionChanged += swipeCardView.OnItemSourceCollectionChanged;
+            observable.CollectionChanged += OnItemSourceCollectionChanged;
+            _subscribedCollection = observable;
+        }
+    }
+
+    private void UnsubscribeCollectionChanged()
+    {
+        if (_subscribedCollection != null)
+        {
+            _subscribedCollection.CollectionChanged -= OnItemSourceCollectionChanged;
+            _subscribedCollection = null;
         }
     }
 
     private void OnItemSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (e.Action == NotifyCollectionChangedAction.Reset)
-        {
-            _itemIndex = 0;
-            _currentDisplayIndex = 0;
-
-            // Cancel any running animations before resetting
-            foreach (var card in _cards)
-            {
-                if (card != null)
-                {
-                    Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
-                    card.IsVisible = false;
-                }
-            }
-
-            _ignoreTouch = false;
-            TopItem = null;
-            if (ItemsSource.Count > 0)
-                Setup();
-
-            return;
-        }
-
         // Guard against null cards (ItemTemplate not yet set)
         if (_cards[0] == null || _cards[1] == null)
         {
             return;
         }
 
-        if (_cards[0].IsVisible == false && _cards[1].IsVisible == false)
+        switch (e.Action)
         {
-            Setup();
+            case NotifyCollectionChangedAction.Reset:
+                _itemIndex = 0;
+                _currentDisplayIndex = 0;
+
+                // Cancel any running animations before resetting
+                foreach (var card in _cards)
+                {
+                    if (card != null)
+                    {
+                        Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
+                        card.IsVisible = false;
+                    }
+                }
+
+                _ignoreTouch = false;
+                TopItem = null;
+                if (ItemsSource != null && ItemsSource.Count > 0)
+                    Setup();
+                break;
+
+            case NotifyCollectionChangedAction.Add:
+                // If both cards are hidden (all items were swiped), show the new items
+                if (_cards[0].IsVisible == false && _cards[1].IsVisible == false)
+                {
+                    _itemIndex = e.NewStartingIndex;
+                    _currentDisplayIndex = e.NewStartingIndex;
+                    Setup();
+                }
+                break;
+
+            case NotifyCollectionChangedAction.Remove:
+                if (ItemsSource == null || ItemsSource.Count == 0)
+                {
+                    // All items removed — hide cards
+                    foreach (var card in _cards)
+                    {
+                        if (card != null)
+                        {
+                            Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
+                            card.IsVisible = false;
+                        }
+                    }
+                    _itemIndex = 0;
+                    _currentDisplayIndex = 0;
+                    TopItem = null;
+                }
+                else if (e.OldStartingIndex <= _currentDisplayIndex)
+                {
+                    // An item at or before the current display was removed — reinitialize
+                    _itemIndex = Math.Min(_currentDisplayIndex, ItemsSource.Count - 1);
+                    _currentDisplayIndex = _itemIndex;
+                    Setup();
+                }
+                break;
+
+            case NotifyCollectionChangedAction.Replace:
+                // If the replaced item is currently displayed, update its binding
+                if (e.NewStartingIndex == _currentDisplayIndex)
+                {
+                    var topCard = _cards[_topCardIndex];
+                    topCard.BindingContext = ItemsSource[_currentDisplayIndex];
+                    TopItem = topCard.BindingContext;
+                }
+                else if (e.NewStartingIndex == _currentDisplayIndex + 1 && _itemIndex > _currentDisplayIndex + 1)
+                {
+                    // The back card item was replaced — update its binding
+                    var backCard = _cards[NextCardIndex(_topCardIndex)];
+                    if (backCard.IsVisible)
+                    {
+                        backCard.BindingContext = ItemsSource[_currentDisplayIndex + 1];
+                    }
+                }
+                break;
+
+            case NotifyCollectionChangedAction.Move:
+                // Reinitialize — move operations change the order unpredictably
+                _itemIndex = 0;
+                _currentDisplayIndex = 0;
+                Setup();
+                break;
         }
     }
 
@@ -1027,24 +1108,28 @@ public class SwipeCardView : ContentView, IDisposable
 
     private void SendSwiped(View sender, SwipeCardDirection direction)
     {
+        var args = new SwipedCardEventArgs(sender.BindingContext, SwipedCommandParameter, direction);
+
         var cmd = SwipedCommand;
-        if (cmd != null && cmd.CanExecute(SwipedCommandParameter))
+        if (cmd != null && cmd.CanExecute(args))
         {
-            cmd.Execute(new SwipedCardEventArgs(sender.BindingContext, SwipedCommandParameter, direction));
+            cmd.Execute(args);
         }
 
-        Swiped?.Invoke(sender, new SwipedCardEventArgs(sender.BindingContext, SwipedCommandParameter, direction));
+        Swiped?.Invoke(sender, args);
     }
 
     private void SendDragging(View sender, SwipeCardDirection direction, DraggingCardPosition position, double distanceDraggedX, double distanceDraggedY)
     {
+        var args = new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY);
+
         var cmd = DraggingCommand;
-        if (cmd != null && cmd.CanExecute(DraggingCommandParameter))
+        if (cmd != null && cmd.CanExecute(args))
         {
-            cmd.Execute(new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY));
+            cmd.Execute(args);
         }
 
-        Dragging?.Invoke(sender, new DraggingCardEventArgs(sender.BindingContext, DraggingCommandParameter, direction, position, distanceDraggedX, distanceDraggedY));
+        Dragging?.Invoke(sender, args);
     }
 
     #endregion Private Methods
