@@ -521,6 +521,40 @@ public class UnitTests : TestBase
     }
 
     [TestMethod]
+    public void CollectionChanged_Add_BeforeCurrent_ShiftsIndices()
+    {
+        var items = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        // Swipe first card — now showing Item2
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        // Insert before current position — indices should shift
+        items.Insert(0, "NewFirst");
+        // TopItem should still be "Item2" (not shifted to "NewFirst")
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
+    public void CollectionChanged_Remove_BeforeCurrent_ShiftsIndices()
+    {
+        var items = new ObservableCollection<string>() { "Item1", "Item2", "Item3" };
+        var swipeCardView = new SwipeCardView { ItemTemplate = CreateSimpleTemplate() };
+        swipeCardView.ItemsSource = items;
+
+        // Swipe first card — now showing Item2
+        swipeCardView.InvokeSwipe(SwipeCardDirection.Right).Wait();
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+
+        // Remove Item1 (before current) — current should stay on "Item2"
+        items.RemoveAt(0);
+        // TopItem unchanged, index shifted
+        Assert.AreEqual("Item2", swipeCardView.TopItem);
+    }
+
+    [TestMethod]
     public void SwipedCommand_CanExecute_ReceivesEventArgs()
     {
         // CanExecute should receive the same EventArgs as Execute (breaking change from PR #6)

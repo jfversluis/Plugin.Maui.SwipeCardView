@@ -556,6 +556,13 @@ public class SwipeCardView : ContentView, IDisposable
                     _currentDisplayIndex = e.NewStartingIndex;
                     Setup();
                 }
+                else if (e.NewStartingIndex <= _currentDisplayIndex)
+                {
+                    // Items inserted before/at current position shift indices
+                    var insertCount = e.NewItems?.Count ?? 1;
+                    _currentDisplayIndex += insertCount;
+                    _itemIndex += insertCount;
+                }
                 break;
 
             case NotifyCollectionChangedAction.Remove:
@@ -574,12 +581,19 @@ public class SwipeCardView : ContentView, IDisposable
                     _currentDisplayIndex = 0;
                     TopItem = null;
                 }
-                else if (e.OldStartingIndex <= _currentDisplayIndex)
+                else if (e.OldStartingIndex == _currentDisplayIndex)
                 {
-                    // An item at or before the current display was removed — reinitialize
-                    _itemIndex = Math.Min(_currentDisplayIndex, ItemsSource.Count - 1);
-                    _currentDisplayIndex = _itemIndex;
+                    // The currently displayed item was removed — reinitialize at same position
+                    _currentDisplayIndex = Math.Min(_currentDisplayIndex, ItemsSource.Count - 1);
+                    _itemIndex = _currentDisplayIndex;
                     Setup();
+                }
+                else if (e.OldStartingIndex < _currentDisplayIndex)
+                {
+                    // An item before the current display was removed — shift indices down
+                    var removeCount = e.OldItems?.Count ?? 1;
+                    _currentDisplayIndex = Math.Max(0, _currentDisplayIndex - removeCount);
+                    _itemIndex = Math.Max(0, _itemIndex - removeCount);
                 }
                 break;
 
@@ -591,11 +605,11 @@ public class SwipeCardView : ContentView, IDisposable
                     topCard.BindingContext = ItemsSource[_currentDisplayIndex];
                     TopItem = topCard.BindingContext;
                 }
-                else if (e.NewStartingIndex == _currentDisplayIndex + 1 && _itemIndex > _currentDisplayIndex + 1)
+                else if (e.NewStartingIndex == _currentDisplayIndex + 1)
                 {
-                    // The back card item was replaced — update its binding
+                    // The back card item was replaced — update its binding if visible
                     var backCard = _cards[NextCardIndex(_topCardIndex)];
-                    if (backCard.IsVisible)
+                    if (backCard.IsVisible || backCard.Opacity > 0)
                     {
                         backCard.BindingContext = ItemsSource[_currentDisplayIndex + 1];
                     }
