@@ -6,6 +6,7 @@
              BackgroundColor="White"
              Shell.BackgroundColor="White"
              Shell.TitleColor="#333333"
+             Shell.ForegroundColor="#333333"
              Title ="Tinder">
 
     <Grid RowDefinitions="*,Auto" Padding="0">

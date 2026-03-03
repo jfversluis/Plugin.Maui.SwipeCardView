@@ -21,7 +21,7 @@
                     <Border StrokeShape="RoundRectangle 20"
                             Stroke="Transparent"
                             StrokeThickness="0"
-                            BackgroundColor="#F8F8F8"
+                            BackgroundColor="Beige"
                             Padding="0"
                             InputTransparent="True">
                         <Border.Shadow>
