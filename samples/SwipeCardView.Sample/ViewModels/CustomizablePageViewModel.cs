@@ -33,6 +33,7 @@ public class CustomizablePageViewModel : BasePageViewModel
     private int _stackDepth;
     private double _stackOffset;
     private double _stackScaleStep;
+    private StackDirection _stackDirection;
 
     public CustomizablePageViewModel()
     {
@@ -62,6 +63,7 @@ public class CustomizablePageViewModel : BasePageViewModel
         _stackDepth = 0;
         _stackOffset = 10;
         _stackScaleStep = 0.03;
+        _stackDirection = StackDirection.Bottom;
 
         SwipedCommand = new Command<SwipedCardEventArgs>(OnSwipedCommand);
         DraggingCommand = new Command<DraggingCardEventArgs>(OnDraggingCommand);
@@ -265,6 +267,26 @@ public class CustomizablePageViewModel : BasePageViewModel
         {
             _stackScaleStep = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public StackDirection StackDirection
+    {
+        get => _stackDirection;
+        set
+        {
+            _stackDirection = value;
+            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsStackDirectionTop));
+        }
+    }
+
+    public bool IsStackDirectionTop
+    {
+        get => _stackDirection == StackDirection.Top;
+        set
+        {
+            StackDirection = value ? StackDirection.Top : StackDirection.Bottom;
         }
     }
 

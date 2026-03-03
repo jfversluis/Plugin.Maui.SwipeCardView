@@ -92,7 +92,8 @@ public class SwipeCardView : ContentView, IDisposable
             typeof(float),
             typeof(SwipeCardView),
             DefaultBackCardScale,
-            validateValue: (_, value) => value is float f && f > 0f && f <= 1f);
+            validateValue: (_, value) => value is float f && f > 0f && f <= 1f,
+            propertyChanged: OnStackVisualPropertyChanged);
 
     public static readonly BindableProperty CardRotationProperty =
         BindableProperty.Create(
@@ -130,7 +131,8 @@ public class SwipeCardView : ContentView, IDisposable
             typeof(double),
             typeof(SwipeCardView),
             10.0,
-            validateValue: (_, value) => value is double d && d >= 0);
+            validateValue: (_, value) => value is double d && d >= 0,
+            propertyChanged: OnStackVisualPropertyChanged);
 
     public static readonly BindableProperty StackScaleStepProperty =
         BindableProperty.Create(
@@ -138,7 +140,16 @@ public class SwipeCardView : ContentView, IDisposable
             typeof(double),
             typeof(SwipeCardView),
             0.03,
-            validateValue: (_, value) => value is double d && d >= 0 && d <= 0.5);
+            validateValue: (_, value) => value is double d && d >= 0 && d <= 0.5,
+            propertyChanged: OnStackVisualPropertyChanged);
+
+    public static readonly BindableProperty StackDirectionProperty =
+        BindableProperty.Create(
+            nameof(StackDirection),
+            typeof(StackDirection),
+            typeof(SwipeCardView),
+            Core.StackDirection.Bottom,
+            propertyChanged: OnStackVisualPropertyChanged);
 
     #endregion Bindable Properties
 
@@ -337,6 +348,13 @@ public class SwipeCardView : ContentView, IDisposable
     {
         get => (double)GetValue(StackScaleStepProperty);
         set => SetValue(StackScaleStepProperty, value);
+    }
+
+    /// <summary>Gets or sets whether stacked cards peek above or below the top card. Default is Bottom.</summary>
+    public StackDirection StackDirection
+    {
+        get => (StackDirection)GetValue(StackDirectionProperty);
+        set => SetValue(StackDirectionProperty, value);
     }
 
     #endregion Public Properties
@@ -796,6 +814,14 @@ public class SwipeCardView : ContentView, IDisposable
     {
         var swipeCardView = (SwipeCardView)bindable;
         swipeCardView.RebuildShadowCards();
+        swipeCardView.ApplyStackVisuals();
+        swipeCardView.PositionShadowCards();
+    }
+
+    private static void OnStackVisualPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        var swipeCardView = (SwipeCardView)bindable;
+        swipeCardView.ApplyStackVisuals();
         swipeCardView.PositionShadowCards();
     }
 
@@ -846,6 +872,8 @@ public class SwipeCardView : ContentView, IDisposable
         var refHeight = _cards[PrevCardIndex(_topCardIndex)]?.Height ?? Height;
         if (refHeight <= 0) refHeight = Height;
 
+        var dirSign = StackDirection == Core.StackDirection.Top ? -1.0 : 1.0;
+
         for (int i = 0; i < _shadowCards.Count; i++)
         {
             var shadow = _shadowCards[i];
@@ -854,7 +882,7 @@ public class SwipeCardView : ContentView, IDisposable
             var compensation = refHeight * (1.0 - scale) / 2.0;
             shadow.AnchorY = 0.5;
             shadow.Scale = scale;
-            shadow.TranslationY = (i + 2) * StackOffset + compensation;
+            shadow.TranslationY = dirSign * ((i + 2) * StackOffset + compensation);
             shadow.IsVisible = hasItems;
         }
     }
@@ -869,6 +897,8 @@ public class SwipeCardView : ContentView, IDisposable
         var refHeight = _cards[PrevCardIndex(_topCardIndex)]?.Height ?? Height;
         if (refHeight <= 0) refHeight = Height;
 
+        var dirSign = StackDirection == Core.StackDirection.Top ? -1.0 : 1.0;
+
         for (int i = 0; i < _shadowCards.Count; i++)
         {
             // Shadow i animates from depth (i+2) toward depth (i+1).
@@ -879,7 +909,7 @@ public class SwipeCardView : ContentView, IDisposable
             var targetTY = restTY - (progressRatio * StackOffset);
 
             _shadowCards[i].Scale = targetScale;
-            _shadowCards[i].TranslationY = targetTY + compensation;
+            _shadowCards[i].TranslationY = dirSign * (targetTY + compensation);
         }
     }
 
@@ -966,15 +996,23 @@ public class SwipeCardView : ContentView, IDisposable
 
     /// <summary>Computes the TranslationY needed for a back card to peek by the desired offset.</summary>
     /// <remarks>
-    /// With center-anchored scaling (AnchorY=0.5), a scaled card's bottom edge retracts by
-    /// H*(1-Scale)/2. To produce a visible peek of <paramref name="peekAmount"/> dp,
-    /// the total TranslationY must compensate for this retraction.
+    /// With center-anchored scaling (AnchorY=0.5), a scaled card's edges retract by H*(1-Scale)/2.
+    /// For Bottom direction, we compensate the bottom retraction so the card peeks below.
+    /// For Top direction, we compensate the top retraction so the card peeks above.
     /// </remarks>
     private double ComputeStackTranslationY(View card, double scale, double peekAmount)
     {
         var height = card.Height;
         if (height <= 0) height = Height; // fallback to container height
         var compensation = height * (1.0 - scale) / 2.0;
+
+        if (StackDirection == Core.StackDirection.Top)
+        {
+            // Peek above: negative offset, subtract compensation (top edge retracts inward)
+            return -card.Y - peekAmount - compensation;
+        }
+
+        // Peek below: positive offset, add compensation (bottom edge retracts inward)
         return -card.Y + peekAmount + compensation;
     }
 

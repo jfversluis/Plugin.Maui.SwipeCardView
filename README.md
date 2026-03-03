@@ -184,6 +184,7 @@ Show stacked cards behind the top card to create the visual illusion of a deck. 
     ItemsSource="{Binding Profiles}"
     StackDepth="2"
     StackOffset="15"
+    StackDirection="Bottom"
     BackCardScale="0.95" />
 ```
 
@@ -192,8 +193,11 @@ Show stacked cards behind the top card to create the visual illusion of a deck. 
 | `StackDepth` | `int` | `0` | Number of cards visible behind the top card. `0` = off (backward compatible), `1` = back card visible, `2` = back card + 1 shadow, etc. |
 | `StackOffset` | `double` | `10` | Vertical offset (in dp) between each stacked card |
 | `StackScaleStep` | `double` | `0.03` | Scale reduction per successive card (e.g., 0.03 = each card 3% smaller) |
+| `StackDirection` | `StackDirection` | `Bottom` | Direction stacked cards peek: `Bottom` (below top card) or `Top` (above top card) |
 
 The `BackCardScale` property controls the scale of the first back card. When `StackDepth` > 1, successive shadow cards scale down further by `StackScaleStep` each.
+
+All stack properties can be changed at runtime and take effect immediately — no swipe action needed.
 
 > **Note:** `StackDepth="0"` is fully backward compatible — the control behaves exactly as before.
 
