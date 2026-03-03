@@ -15,7 +15,9 @@ public partial class ColorsPage : ContentPage
 
     private void OnDragging(object sender, DraggingCardEventArgs e)
     {
-        var view = (View)sender;
+        // Use the card view (the Border with rounded corners) for color feedback,
+        // not the SwipeCardView itself which is a rectangular container.
+        var card = e.CardView ?? (View)sender;
 
         // Update page-level labels (not inside card template) to avoid
         // layout recalculation inside the Frame during Scale transforms,
@@ -29,36 +31,36 @@ public partial class ColorsPage : ContentPage
                 break;
 
             case DraggingCardPosition.UnderThreshold:
-                view.BackgroundColor = Colors.DarkTurquoise;
+                card.BackgroundColor = Colors.DarkTurquoise;
                 break;
 
             case DraggingCardPosition.OverThreshold:
                 switch (e.Direction)
                 {
                     case SwipeCardDirection.Left:
-                        view.BackgroundColor = Color.FromArgb("#FF6A4F");
+                        card.BackgroundColor = Color.FromArgb("#FF6A4F");
                         break;
 
                     case SwipeCardDirection.Right:
-                        view.BackgroundColor = Color.FromArgb("#63DD99");
+                        card.BackgroundColor = Color.FromArgb("#63DD99");
                         break;
 
                     case SwipeCardDirection.Up:
-                        view.BackgroundColor = Color.FromArgb("#2196F3");
+                        card.BackgroundColor = Color.FromArgb("#2196F3");
                         break;
 
                     case SwipeCardDirection.Down:
-                        view.BackgroundColor = Colors.MediumPurple;
+                        card.BackgroundColor = Colors.MediumPurple;
                         break;
                 }
                 break;
 
             case DraggingCardPosition.FinishedUnderThreshold:
-                view.BackgroundColor = Colors.Beige;
+                card.BackgroundColor = Colors.Beige;
                 break;
 
             case DraggingCardPosition.FinishedOverThreshold:
-                view.BackgroundColor = Colors.Beige;
+                card.BackgroundColor = Colors.Beige;
                 DirectionLabel.Text = string.Empty;
                 PositionLabel.Text = string.Empty;
                 break;
