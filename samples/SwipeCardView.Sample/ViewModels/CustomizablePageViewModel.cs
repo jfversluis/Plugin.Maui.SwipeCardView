@@ -30,6 +30,10 @@ public class CustomizablePageViewModel : BasePageViewModel
 
     private bool _isLoopCards;
 
+    private int _stackDepth;
+    private double _stackOffset;
+    private double _stackScaleStep;
+
     public CustomizablePageViewModel()
     {
         _cardItems = new ObservableCollection<string>();
@@ -54,6 +58,10 @@ public class CustomizablePageViewModel : BasePageViewModel
         _animationLength = 250;
         _backCardScale = 0.8f;
         _cardRotation = 20;
+
+        _stackDepth = 0;
+        _stackOffset = 10;
+        _stackScaleStep = 0.03;
 
         SwipedCommand = new Command<SwipedCardEventArgs>(OnSwipedCommand);
         DraggingCommand = new Command<DraggingCardEventArgs>(OnDraggingCommand);
@@ -226,6 +234,36 @@ public class CustomizablePageViewModel : BasePageViewModel
         set
         {
             _isLoopCards = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public int StackDepth
+    {
+        get => _stackDepth;
+        set
+        {
+            _stackDepth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double StackOffset
+    {
+        get => _stackOffset;
+        set
+        {
+            _stackOffset = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double StackScaleStep
+    {
+        get => _stackScaleStep;
+        set
+        {
+            _stackScaleStep = value;
             RaisePropertyChanged();
         }
     }
