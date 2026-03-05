@@ -15,16 +15,19 @@
             ItemsSource="{Binding Profiles}"
             HorizontalOptions="FillAndExpand"
             VerticalOptions="FillAndExpand"
-            Padding="8,4,8,24"
+            Padding="12,32,12,24"
             SwipedCommand="{Binding SwipedCommand}"
             DraggingCommand="{Binding DraggingCommand}"
             Threshold="{Binding Threshold}"
             SupportedSwipeDirections="Left, Right, Up"
             SupportedDraggingDirections="Left, Right, Up, Down"
             LoopCards="True"
-            StackDepth="2"
-            StackOffset="15"
-            BackCardScale="0.95">
+            StackDepth="3"
+            StackOffset="5"
+            StackScaleStep="0"
+            StackDirection="Top"
+            StackCardColor="#5A7050"
+            BackCardScale="0.98">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
                     <Border StrokeShape="RoundRectangle 12"
