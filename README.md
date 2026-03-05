@@ -182,18 +182,21 @@ Show stacked cards behind the top card to create the visual illusion of a deck. 
 ```xml
 <swipeCardView:SwipeCardView
     ItemsSource="{Binding Profiles}"
-    StackDepth="2"
-    StackOffset="15"
-    StackDirection="Bottom"
-    BackCardScale="0.95" />
+    StackDepth="3"
+    StackOffset="5"
+    StackDirection="Top"
+    StackScaleStep="0"
+    StackCardColor="#5A7050"
+    BackCardScale="0.98" />
 ```
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `StackDepth` | `int` | `0` | Number of cards visible behind the top card. `0` = off (backward compatible), `1` = back card visible, `2` = back card + 1 shadow, etc. |
-| `StackOffset` | `double` | `10` | Vertical offset (in dp) between each stacked card |
-| `StackScaleStep` | `double` | `0.03` | Scale reduction per successive card (e.g., 0.03 = each card 3% smaller) |
+| `StackOffset` | `double` | `8` | Vertical offset (in dp) between each stacked card |
+| `StackScaleStep` | `double` | `0.02` | Scale reduction per successive card (e.g., 0.02 = each card 2% smaller). Set to `0` for uniform-width strips. |
 | `StackDirection` | `StackDirection` | `Bottom` | Direction stacked cards peek: `Bottom` (below top card) or `Top` (above top card) |
+| `StackCardColor` | `Color?` | `null` | Color for stack strips and back card overlay. When set, shows graduated colors (lighter at deeper levels) and covers the back card with an overlay that fades during swipe. |
 
 The `BackCardScale` property controls the scale of the first back card. When `StackDepth` > 1, successive shadow cards scale down further by `StackScaleStep` each.
 
