@@ -696,7 +696,7 @@ public class SwipeCardView : ContentView, IDisposable
                     backCard.TranslationX = 0;
                     backCard.TranslationY = -backCard.Y;
                     backCard.ZIndex = 0;
-                    backCard.Opacity = 0;
+                    backCard.Opacity = StackDepth > 0 ? 1 : 0;
                     backCard.IsVisible = true;
                     _itemIndex++;
                 }
@@ -871,8 +871,9 @@ public class SwipeCardView : ContentView, IDisposable
 
         // Create shadow cards for all stack depths (deepest → shallowest) so they are
         // earliest in Children and render behind everything at the same ZIndex.
-        // The back card is kept hidden (Opacity=0) at home position — shadow cards
-        // provide ALL the visual strips behind the top card.
+        // The back card is kept visible (Opacity=1) at home position — it sits behind
+        // the top card and is revealed as the user swipes. Shadow cards provide the
+        // decorative strips behind both cards.
         int shadowCount = StackDepth;
         // Insert deepest shadow first (it renders furthest back)
         for (int i = shadowCount - 1; i >= 0; i--)
@@ -1067,8 +1068,14 @@ public class SwipeCardView : ContentView, IDisposable
             return;
         }
 
-        // Back card stays hidden at home position (Opacity=0, Scale=1.0).
-        // Shadow cards provide all the visual strips behind the top card.
+        // Back card sits at home position (Opacity=1, Scale=1.0) behind the top card.
+        // It is revealed naturally as the user swipes the top card away.
+        // Shadow cards provide the decorative strips behind both cards.
+        var backCard = _cards[PrevCardIndex(_topCardIndex)];
+        if (backCard != null)
+        {
+            backCard.Opacity = 1;
+        }
         PositionShadowCards();
     }
 
@@ -1310,8 +1317,8 @@ public class SwipeCardView : ContentView, IDisposable
                 // After the visible animation completes, reset the back card.
                 if (StackDepth > 0)
                 {
-                    // Stack mode: back card stays hidden at home position.
-                    prevCard.Opacity = 0;
+                    // Stack mode: back card stays visible at home position.
+                    prevCard.Opacity = 1;
                     prevCard.Scale = 1.0;
                     InvalidateCardLayout(prevCard);
                 }
@@ -1408,7 +1415,7 @@ public class SwipeCardView : ContentView, IDisposable
                 // Stack mode: hide back card at home position.
                 // Shadow cards provide the visual strips behind the top card.
                 oldTopCard.AnchorY = 0.5;
-                oldTopCard.Opacity = 0;
+                oldTopCard.Opacity = 1;
             }
             else
             {
@@ -1485,7 +1492,7 @@ public class SwipeCardView : ContentView, IDisposable
                 oldTopCard.BatchBegin();
                 oldTopCard.AnchorY = 0.5;
                 oldTopCard.Scale = 1.0;
-                oldTopCard.Opacity = 0;
+                oldTopCard.Opacity = StackDepth > 0 ? 1 : 0;
                 oldTopCard.BatchCommit();
             }
             finally
@@ -1512,7 +1519,7 @@ public class SwipeCardView : ContentView, IDisposable
             oldTopCard.BatchBegin();
             oldTopCard.AnchorY = 0.5;
             oldTopCard.Scale = 1.0;
-            oldTopCard.Opacity = 0;
+            oldTopCard.Opacity = StackDepth > 0 ? 1 : 0;
             oldTopCard.BatchCommit();
         }
 
