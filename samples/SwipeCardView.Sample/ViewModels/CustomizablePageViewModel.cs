@@ -34,7 +34,6 @@ public class CustomizablePageViewModel : BasePageViewModel
     private double _stackOffset;
     private double _stackScaleStep;
     private StackDirection _stackDirection;
-    private Color? _stackCardColor;
 
     public CustomizablePageViewModel()
     {
@@ -65,7 +64,6 @@ public class CustomizablePageViewModel : BasePageViewModel
         _stackOffset = 8;
         _stackScaleStep = 0.02;
         _stackDirection = StackDirection.Bottom;
-        _stackCardColor = null;
 
         SwipedCommand = new Command<SwipedCardEventArgs>(OnSwipedCommand);
         DraggingCommand = new Command<DraggingCardEventArgs>(OnDraggingCommand);
@@ -289,35 +287,6 @@ public class CustomizablePageViewModel : BasePageViewModel
         set
         {
             StackDirection = value ? StackDirection.Top : StackDirection.Bottom;
-        }
-    }
-
-    public Color? StackCardColor
-    {
-        get => _stackCardColor;
-        set
-        {
-            _stackCardColor = value;
-            RaisePropertyChanged();
-        }
-    }
-
-    public string StackCardColorText
-    {
-        get => _stackCardColor != null ? _stackCardColor.ToArgbHex() : "";
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                StackCardColor = null;
-            }
-            else
-            {
-                var hex = value.StartsWith("#") ? value : "#" + value;
-                try { StackCardColor = Color.FromArgb(hex); }
-                catch { /* ignore invalid color strings */ }
-            }
-            RaisePropertyChanged();
         }
     }
 

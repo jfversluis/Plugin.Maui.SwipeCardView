@@ -27,8 +27,7 @@
             StackDepth="{Binding StackDepth}"
             StackOffset="{Binding StackOffset}"
             StackScaleStep="{Binding StackScaleStep}"
-            StackDirection="{Binding StackDirection}"
-            StackCardColor="{Binding StackCardColor}">
+            StackDirection="{Binding StackDirection}">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
                     <Border StrokeShape="RoundRectangle 16"
@@ -178,10 +177,6 @@
                                 </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </Grid>
-                        <VerticalStackLayout>
-                            <Label Text="Card Color (hex, e.g. #5A7050)" FontSize="10" TextColor="{StaticResource Gray400}" />
-                            <Entry Text="{Binding StackCardColorText}" Placeholder="#RRGGBB" FontSize="14" />
-                        </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>
 

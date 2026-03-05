@@ -26,7 +26,6 @@
             StackOffset="5"
             StackScaleStep="0"
             StackDirection="Top"
-            StackCardColor="#5A7050"
             BackCardScale="0.98">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
