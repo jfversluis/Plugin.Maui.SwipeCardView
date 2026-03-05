@@ -867,11 +867,13 @@ public class SwipeCardView : ContentView, IDisposable
         }
         _shadowCards.Clear();
 
-        if (StackDepth <= 1) return;
+        if (StackDepth <= 0) return;
 
-        // Create shadow cards FIRST (deepest → shallowest) so they are earliest in Children
-        // and render behind everything at the same ZIndex.
-        int shadowCount = StackDepth - 1;
+        // Create shadow cards for all stack depths (deepest → shallowest) so they are
+        // earliest in Children and render behind everything at the same ZIndex.
+        // The back card is kept hidden (Opacity=0) at home position — shadow cards
+        // provide ALL the visual strips behind the top card.
+        int shadowCount = StackDepth;
         // Insert deepest shadow first (it renders furthest back)
         for (int i = shadowCount - 1; i >= 0; i--)
         {
@@ -940,7 +942,7 @@ public class SwipeCardView : ContentView, IDisposable
         for (int i = 0; i < _shadowCards.Count; i++)
         {
             var shadow = _shadowCards[i];
-            int depth = i + 2; // back card is depth 1, shadows start at depth 2
+            int depth = i + 1; // shadow cards represent depths 1, 2, 3, ...
             var shadowH = shadow.Height > 0 ? shadow.Height : fallbackHeight;
             shadow.Scale = LayerScale(depth);
             shadow.TranslationY = LayerTranslationY(depth, shadow.Y, shadowH);
@@ -1057,32 +1059,16 @@ public class SwipeCardView : ContentView, IDisposable
     {
         if (StackDepth <= 0 || ItemsSource == null || ItemsSource.Count < 2) return;
 
-        var backCard = _cards[PrevCardIndex(_topCardIndex)];
-        if (backCard == null || !backCard.IsVisible) return;
-
-        // We need the card height (or container height) for compensation.
-        // If neither is available yet (first layout pass), subscribe to SizeChanged.
-        var refHeight = backCard.Height > 0 ? backCard.Height : Height;
-        if (refHeight <= 0)
+        // We need height available for compensation math.
+        if (Height <= 0)
         {
-            // Heights not ready — defer until layout completes
             SizeChanged -= OnSizeChangedForStack;
             SizeChanged += OnSizeChangedForStack;
             return;
         }
 
-        // Center-anchored scaling with compensated TranslationY:
-        // The card is scaled from its center (AnchorY=0.5), then pushed enough
-        // that its edge peeks exactly StackOffset dp beyond the top card.
-        var stackScale = LayerScale(1);
-        backCard.AnchorY = 0.5;
-        backCard.Scale = stackScale;
-        backCard.Opacity = 1;
-        backCard.TranslationY = ComputeStackTranslationY(backCard, stackScale, StackOffset);
-
-        // Reposition shadow cards now that layout has computed correct heights.
-        // The initial PositionShadowCards() in Setup() may have used incorrect
-        // height fallbacks before elements were laid out.
+        // Back card stays hidden at home position (Opacity=0, Scale=1.0).
+        // Shadow cards provide all the visual strips behind the top card.
         PositionShadowCards();
     }
 
@@ -1092,7 +1078,6 @@ public class SwipeCardView : ContentView, IDisposable
         {
             SizeChanged -= OnSizeChangedForStack;
             ApplyStackVisuals();
-            PositionShadowCards();
         }
     }
 
@@ -1199,39 +1184,8 @@ public class SwipeCardView : ContentView, IDisposable
                 var newScale = Math.Min(BackCardScale + Math.Abs((cardDistance / Threshold) * (1.0f - BackCardScale)), 1.0f);
                 backCard.Scale = newScale;
             }
-            else
-            {
-                // Stack mode: progressively reveal back card photo as top card drags away.
-                // The overlay fades out and the back card scales/translates toward its
-                // "new top card" position, creating a smooth transition.
-                var distance = Math.Max(Math.Abs(differenceX), Math.Abs(differenceY));
-                var progress = Math.Clamp(distance / Threshold, 0, 1);
-                var stackScale = LayerScale(1);
-
-                // Scale back card from stack scale toward 1.0
-                backCard.Scale = stackScale + progress * (1.0 - stackScale);
-
-                // Translate back card from stack offset toward home position
-                var homeY = -backCard.Y;
-                var stackY = ComputeStackTranslationY(backCard, stackScale, StackOffset);
-                backCard.TranslationY = stackY + progress * (homeY - stackY);
-
-                // Advance shadow cards one level closer
-                for (int i = 0; i < _shadowCards.Count; i++)
-                {
-                    var shadow = _shadowCards[i];
-                    int depth = i + 2;
-                    int targetDepth = depth - 1;
-                    var currentScale = LayerScale(depth);
-                    var targetScale = LayerScale(targetDepth);
-                    shadow.Scale = currentScale + progress * (targetScale - currentScale);
-
-                    var shadowH = shadow.Height > 0 ? shadow.Height : Height;
-                    var currentTY = LayerTranslationY(depth, shadow.Y, shadowH);
-                    var targetTY = LayerTranslationY(targetDepth, shadow.Y, shadowH);
-                    shadow.TranslationY = currentTY + progress * (targetTY - currentTY);
-                }
-            }
+            // Stack mode: back card and all shadows stay completely static during drag.
+            // Only the top card moves. This avoids the jarring "next photo coming out" effect.
         }
     }
 
@@ -1340,16 +1294,8 @@ public class SwipeCardView : ContentView, IDisposable
                     }
                     else
                     {
-                        // Stack mode: animate back card back to rest positions
-                        var stackScale = LayerScale(1);
-                        var stackY = ComputeStackTranslationY(prevCard, stackScale, StackOffset);
-                        var backScaleTask = prevCard.ScaleToAsync(stackScale, AnimationLength, Easing.SpringOut);
-                        var backTranslateTask = prevCard.TranslateToAsync(0, stackY, AnimationLength, Easing.SpringOut);
-
-                        await Task.WhenAll(translateTask, rotateTask, backScaleTask, backTranslateTask);
-
-                        // Reset shadow cards to rest positions
-                        PositionShadowCards();
+                        // Stack mode: back card and shadows didn't move, just snap top card back
+                        await Task.WhenAll(translateTask, rotateTask);
                     }
                 }
                 catch (Exception ex)
@@ -1364,13 +1310,10 @@ public class SwipeCardView : ContentView, IDisposable
                 // After the visible animation completes, reset the back card.
                 if (StackDepth > 0)
                 {
-                    // Stack mode: restore back card to rest state.
-                    var restScale = LayerScale(1);
-
-                    prevCard.Opacity = 1;
-                    prevCard.AnchorY = 0.5;
-                    prevCard.Scale = restScale;
-                    prevCard.TranslationY = ComputeStackTranslationY(prevCard, restScale, StackOffset);
+                    // Stack mode: back card stays hidden at home position.
+                    prevCard.Opacity = 0;
+                    prevCard.Scale = 1.0;
+                    InvalidateCardLayout(prevCard);
                 }
                 else
                 {
@@ -1462,12 +1405,10 @@ public class SwipeCardView : ContentView, IDisposable
 
             if (StackDepth > 0)
             {
-                // Stack mode: show back card at offset position
-                var stackScale = LayerScale(1);
+                // Stack mode: hide back card at home position.
+                // Shadow cards provide the visual strips behind the top card.
                 oldTopCard.AnchorY = 0.5;
-                oldTopCard.Opacity = 1;
-                oldTopCard.Scale = stackScale;
-                oldTopCard.TranslationY = ComputeStackTranslationY(oldTopCard, stackScale, StackOffset);
+                oldTopCard.Opacity = 0;
             }
             else
             {
@@ -1543,10 +1484,8 @@ public class SwipeCardView : ContentView, IDisposable
                 // Position the old top card as the back card
                 oldTopCard.BatchBegin();
                 oldTopCard.AnchorY = 0.5;
-                oldTopCard.Scale = StackDepth > 0 ? LayerScale(1) : 1.0;
-                oldTopCard.Opacity = StackDepth > 0 ? 1 : 0;
-                if (StackDepth > 0)
-                    oldTopCard.TranslationY = ComputeStackTranslationY(oldTopCard, LayerScale(1), StackOffset);
+                oldTopCard.Scale = 1.0;
+                oldTopCard.Opacity = 0;
                 oldTopCard.BatchCommit();
             }
             finally
@@ -1572,10 +1511,8 @@ public class SwipeCardView : ContentView, IDisposable
             // Position the old top card as the back card
             oldTopCard.BatchBegin();
             oldTopCard.AnchorY = 0.5;
-            oldTopCard.Scale = StackDepth > 0 ? LayerScale(1) : 1.0;
-            oldTopCard.Opacity = StackDepth > 0 ? 1 : 0;
-            if (StackDepth > 0)
-                oldTopCard.TranslationY = ComputeStackTranslationY(oldTopCard, LayerScale(1), StackOffset);
+            oldTopCard.Scale = 1.0;
+            oldTopCard.Opacity = 0;
             oldTopCard.BatchCommit();
         }
 

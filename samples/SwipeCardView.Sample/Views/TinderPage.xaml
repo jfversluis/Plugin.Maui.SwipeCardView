@@ -23,7 +23,7 @@
             SupportedDraggingDirections="Left, Right, Up, Down"
             LoopCards="True"
             StackDepth="3"
-            StackOffset="5"
+            StackOffset="8"
             StackScaleStep="0"
             StackDirection="Top"
             BackCardScale="0.98">
