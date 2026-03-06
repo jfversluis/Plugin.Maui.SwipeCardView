@@ -200,6 +200,8 @@ In non-stack mode (`StackDepth` = 0), the `BackCardScale` property controls the 
 
 All stack properties can be changed at runtime and take effect immediately — no swipe action needed.
 
+**Dynamic depth:** When `LoopCards` is disabled, the visible strip count automatically decreases as the user approaches the end of the collection. For example, with `StackDepth="3"` and 2 cards remaining, only 1 strip is shown; on the very last card, no strips are shown. When `LoopCards` is enabled, all strips remain visible since there are always more cards in the loop.
+
 > **Note:** `StackDepth="0"` is fully backward compatible — the control behaves exactly as before.
 
 ## Migration From SwipeCardView for Xamarin.Forms

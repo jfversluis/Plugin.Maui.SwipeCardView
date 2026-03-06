@@ -987,8 +987,23 @@ public class SwipeCardView : ContentView, IDisposable
         if (Content is not Grid grid) return;
         if (_shadowCards.Count == 0) return;
 
-        var hasItems = ItemsSource != null && ItemsSource.Count >= 2
-            && (LoopCards || ItemsSource.Count - _currentDisplayIndex >= 2);
+        // Calculate how many shadow strips should be visible based on remaining cards.
+        // Each shadow suggests a card behind; don't show more shadows than actual remaining cards.
+        // remainingCards includes the top card, so subtract 1 for the "depth behind" count.
+        int visibleShadows = 0;
+        if (ItemsSource != null && ItemsSource.Count >= 2)
+        {
+            if (LoopCards)
+            {
+                visibleShadows = _shadowCards.Count;
+            }
+            else
+            {
+                var remaining = ItemsSource.Count - _currentDisplayIndex;
+                // remaining-1 = cards behind top card; cap at shadow count
+                visibleShadows = Math.Min(Math.Max(remaining - 1, 0), _shadowCards.Count);
+            }
+        }
 
         // Use the internal grid height (excludes SwipeCardView padding) for
         // more accurate compensation when element heights aren't available yet.
@@ -1001,7 +1016,7 @@ public class SwipeCardView : ContentView, IDisposable
             var shadowH = shadow.Height > 0 ? shadow.Height : fallbackHeight;
             shadow.Scale = LayerScale(depth);
             shadow.TranslationY = LayerTranslationY(depth, shadow.Y, shadowH);
-            shadow.IsVisible = hasItems;
+            shadow.IsVisible = i < visibleShadows;
         }
     }
 

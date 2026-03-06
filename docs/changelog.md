@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 - **Card Stack Visual Effect** — New `StackDepth` property to show stacked cards behind the top card, creating a visual deck effect. When enabled, the back card is visible at rest and decorative shadow cards peek below for depth
 - **StackOffset property** — Controls the vertical offset (in dp) between each stacked card (default: 10)
 - **StackScaleStep property** — Controls the scale reduction per successive shadow card (default: 0.03)
+- **Dynamic stack depth** — When `LoopCards` is disabled, visible strip count automatically decreases as remaining cards drop below `StackDepth`, providing a realistic deck-depletion effect
 
 ### Fixed
 
