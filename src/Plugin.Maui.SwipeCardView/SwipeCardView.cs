@@ -393,10 +393,8 @@ public class SwipeCardView : ContentView, IDisposable
                 Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
         }
 
-        foreach (var shadow in _shadowCards)
-        {
-            // Border doesn't implement IDisposable; removal from Children is sufficient.
-        }
+        // Shadow cards are removed from Children in RebuildShadowCards;
+        // just clear the list reference here.
         _shadowCards.Clear();
 
         SizeChanged -= OnSizeChangedForStack;
@@ -667,6 +665,10 @@ public class SwipeCardView : ContentView, IDisposable
                         card.IsVisible = false;
                     }
                 }
+                foreach (var shadow in _shadowCards)
+                {
+                    shadow.IsVisible = false;
+                }
 
                 _ignoreTouch = false;
                 TopItem = null;
@@ -708,6 +710,8 @@ public class SwipeCardView : ContentView, IDisposable
                     backCard.IsVisible = true;
                     _itemIndex++;
                 }
+                // Refresh shadow card visibility (handles transition from <2 to >=2 items)
+                PositionShadowCards();
                 break;
 
             case NotifyCollectionChangedAction.Remove:
@@ -831,7 +835,8 @@ public class SwipeCardView : ContentView, IDisposable
         if (newValue is int depth && depth <= 0)
         {
             // Stack mode disabled — restore non-stack back card state (hidden)
-            var backCard = swipeCardView._cards[swipeCardView.PrevCardIndex(swipeCardView._topCardIndex)];
+            var backIdx = swipeCardView.PrevCardIndex(swipeCardView._topCardIndex);
+            var backCard = swipeCardView._cards[backIdx];
             if (backCard != null)
             {
                 backCard.Opacity = 0;
@@ -859,26 +864,41 @@ public class SwipeCardView : ContentView, IDisposable
     private static void DisableNativeClipping(Grid grid)
     {
 #if ANDROID
+        // Apply immediately if the native handler is already available (runtime StackDepth change),
+        // otherwise subscribe to HandlerChanged to apply when the handler is first set.
+        if (grid.Handler?.PlatformView is Android.Views.ViewGroup existingNativeGrid)
+        {
+            ApplyClipSettings(existingNativeGrid);
+            return;
+        }
+
         EventHandler handler = null!;
         handler = (s, e) =>
         {
             if (grid.Handler?.PlatformView is Android.Views.ViewGroup nativeGrid)
             {
-                nativeGrid.SetClipChildren(false);
-                nativeGrid.SetClipToPadding(false);
-                var parent = nativeGrid.Parent;
-                for (int depth = 0; depth < 8 && parent is Android.Views.ViewGroup pg; depth++)
-                {
-                    pg.SetClipChildren(false);
-                    pg.SetClipToPadding(false);
-                    parent = pg.Parent;
-                }
+                ApplyClipSettings(nativeGrid);
             }
             grid.HandlerChanged -= handler;
         };
         grid.HandlerChanged += handler;
 #endif
     }
+
+#if ANDROID
+    private static void ApplyClipSettings(Android.Views.ViewGroup nativeGrid)
+    {
+        nativeGrid.SetClipChildren(false);
+        nativeGrid.SetClipToPadding(false);
+        var parent = nativeGrid.Parent;
+        for (int depth = 0; depth < 8 && parent is Android.Views.ViewGroup pg; depth++)
+        {
+            pg.SetClipChildren(false);
+            pg.SetClipToPadding(false);
+            parent = pg.Parent;
+        }
+    }
+#endif
 
     /// <summary>Creates or removes decorative Border elements for the stack visual effect.</summary>
     private void RebuildShadowCards()
@@ -894,7 +914,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         if (StackDepth <= 0)
         {
-            grid.IsClippedToBounds = true;
+            // Non-stack mode: leave default (unclipped) so swipe-off animations aren't cut
             return;
         }
 
@@ -967,7 +987,8 @@ public class SwipeCardView : ContentView, IDisposable
         if (Content is not Grid grid) return;
         if (_shadowCards.Count == 0) return;
 
-        var hasItems = ItemsSource != null && ItemsSource.Count >= 2;
+        var hasItems = ItemsSource != null && ItemsSource.Count >= 2
+            && (LoopCards || ItemsSource.Count - _currentDisplayIndex >= 2);
 
         // Use the internal grid height (excludes SwipeCardView padding) for
         // more accurate compensation when element heights aren't available yet.
