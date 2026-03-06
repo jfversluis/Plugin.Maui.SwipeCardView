@@ -30,6 +30,11 @@ public class CustomizablePageViewModel : BasePageViewModel
 
     private bool _isLoopCards;
 
+    private int _stackDepth;
+    private double _stackOffset;
+    private double _stackScaleStep;
+    private StackDirection _stackDirection;
+
     public CustomizablePageViewModel()
     {
         _cardItems = new ObservableCollection<string>();
@@ -54,6 +59,11 @@ public class CustomizablePageViewModel : BasePageViewModel
         _animationLength = 250;
         _backCardScale = 0.8f;
         _cardRotation = 20;
+
+        _stackDepth = 0;
+        _stackOffset = 8;
+        _stackScaleStep = 0.02;
+        _stackDirection = StackDirection.Bottom;
 
         SwipedCommand = new Command<SwipedCardEventArgs>(OnSwipedCommand);
         DraggingCommand = new Command<DraggingCardEventArgs>(OnDraggingCommand);
@@ -227,6 +237,56 @@ public class CustomizablePageViewModel : BasePageViewModel
         {
             _isLoopCards = value;
             RaisePropertyChanged();
+        }
+    }
+
+    public int StackDepth
+    {
+        get => _stackDepth;
+        set
+        {
+            _stackDepth = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double StackOffset
+    {
+        get => _stackOffset;
+        set
+        {
+            _stackOffset = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public double StackScaleStep
+    {
+        get => _stackScaleStep;
+        set
+        {
+            _stackScaleStep = value;
+            RaisePropertyChanged();
+        }
+    }
+
+    public StackDirection StackDirection
+    {
+        get => _stackDirection;
+        set
+        {
+            _stackDirection = value;
+            RaisePropertyChanged();
+            RaisePropertyChanged(nameof(IsStackDirectionTop));
+        }
+    }
+
+    public bool IsStackDirectionTop
+    {
+        get => _stackDirection == StackDirection.Top;
+        set
+        {
+            StackDirection = value ? StackDirection.Top : StackDirection.Bottom;
         }
     }
 

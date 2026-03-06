@@ -44,6 +44,7 @@ Install with the dotnet CLI: `dotnet add package Plugin.Maui.SwipeCardView`, or 
 - **Navigation** – Go back to previously swiped cards with `GoBack()`, optionally with animation
 - **Programmatic Swiping** – Trigger swipes from code with `InvokeSwipe()`
 - **Looping** – Enable infinite card looping with the `LoopCards` property
+- **Card Stack** – Show stacked cards behind the top card with `StackDepth`, giving the visual illusion of a deck
 - **Disposable** – Proper resource cleanup with `IDisposable` implementation
 
 For more info about the features check out [the full documentation](docs/index.md).
@@ -173,6 +174,35 @@ Enable infinite card looping so the stack cycles back to the first card after re
     ItemsSource="{Binding CardItems}"
     LoopCards="True" />
 ```
+
+## Card Stack Visual Effect
+
+Show stacked cards behind the top card to create the visual illusion of a deck. Set `StackDepth` to control how many cards are visible:
+
+```xml
+<swipeCardView:SwipeCardView
+    ItemsSource="{Binding Profiles}"
+    StackDepth="3"
+    StackOffset="5"
+    StackDirection="Top"
+    StackScaleStep="0"
+    BackCardScale="0.98" />
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `StackDepth` | `int` | `0` | Number of cards visible behind the top card. `0` = off (backward compatible), `1` = back card visible, `2` = back card + 1 shadow, etc. |
+| `StackOffset` | `double` | `10` | Vertical offset (in dp) between each stacked card |
+| `StackScaleStep` | `double` | `0.03` | Scale reduction per successive card (e.g., 0.02 = each card 2% smaller). Set to `0` for uniform-width strips. |
+| `StackDirection` | `StackDirection` | `Bottom` | Direction stacked cards peek: `Bottom` (below top card) or `Top` (above top card) |
+
+In non-stack mode (`StackDepth` = 0), the `BackCardScale` property controls the initial scale of the back card during drag. In stack mode (`StackDepth` > 0), card scaling is driven by `StackScaleStep` for visual consistency across all strips.
+
+All stack properties can be changed at runtime and take effect immediately — no swipe action needed.
+
+**Dynamic depth:** When `LoopCards` is disabled, the visible strip count automatically decreases as the user approaches the end of the collection. For example, with `StackDepth="3"` and 2 cards remaining, only 1 strip is shown; on the very last card, no strips are shown. When `LoopCards` is enabled, all strips remain visible since there are always more cards in the loop.
+
+> **Note:** `StackDepth="0"` is fully backward compatible — the control behaves exactly as before.
 
 ## Migration From SwipeCardView for Xamarin.Forms
 

@@ -23,7 +23,11 @@
             AnimationLength="{Binding AnimationLength}"
             BackCardScale="{Binding BackCardScale}"
             CardRotation="{Binding CardRotation}"
-            LoopCards="{Binding IsLoopCards}">
+            LoopCards="{Binding IsLoopCards}"
+            StackDepth="{Binding StackDepth}"
+            StackOffset="{Binding StackOffset}"
+            StackScaleStep="{Binding StackScaleStep}"
+            StackDirection="{Binding StackDirection}">
             <swipeCardView:SwipeCardView.ItemTemplate>
                 <DataTemplate>
                     <Border StrokeShape="RoundRectangle 16"
@@ -145,6 +149,36 @@
                            VerticalOptions="Center" FontSize="12" FontAttributes="Bold"
                            TextColor="{StaticResource Primary}" WidthRequest="36" />
                 </Grid>
+
+                <!-- Stack settings -->
+                <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource Gray100}"
+                        BackgroundColor="Transparent" Padding="12,8">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Stack Effect" FontSize="12" FontAttributes="Bold" TextColor="{StaticResource Gray500}" />
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                            <VerticalStackLayout>
+                                <Label Text="Depth" FontSize="10" TextColor="{StaticResource Gray400}" />
+                                <Entry Text="{Binding StackDepth}" Keyboard="Numeric" FontSize="14" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="Offset" FontSize="10" TextColor="{StaticResource Gray400}" />
+                                <Entry Text="{Binding StackOffset}" Keyboard="Numeric" FontSize="14" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="2">
+                                <Label Text="Scale Step" FontSize="10" TextColor="{StaticResource Gray400}" />
+                                <Entry Text="{Binding StackScaleStep}" Keyboard="Numeric" FontSize="14" />
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="3" VerticalOptions="End">
+                                <Label Text="Direction" FontSize="10" TextColor="{StaticResource Gray400}" />
+                                <HorizontalStackLayout Spacing="4">
+                                    <Label Text="↓" FontSize="14" TextColor="{StaticResource Gray400}" />
+                                    <Switch IsToggled="{Binding IsStackDirectionTop}" />
+                                    <Label Text="↑" FontSize="14" TextColor="{StaticResource Gray400}" />
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
 
                 <!-- Action buttons -->
                 <Grid ColumnDefinitions="*,*" ColumnSpacing="8">

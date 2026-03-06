@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.1.0
+
+### Added
+
+- **Card Stack Visual Effect** — New `StackDepth` property to show stacked cards behind the top card, creating a visual deck effect. When enabled, the back card is visible at rest and decorative shadow cards peek below for depth
+- **StackOffset property** — Controls the vertical offset (in dp) between each stacked card (default: 10)
+- **StackScaleStep property** — Controls the scale reduction per successive shadow card (default: 0.03)
+- **Dynamic stack depth** — When `LoopCards` is disabled, visible strip count automatically decreases as remaining cards drop below `StackDepth`, providing a realistic deck-depletion effect
+
+### Fixed
+
+- **Memory leak in Dispose** — Shadow card `Border` elements are now properly disposed when the control is disposed
+- **SizeChanged handler leak** — `OnSizeChangedForStack` event handler is now unsubscribed in `Dispose()` to prevent leaks when the control is disposed before layout completes
+- **CS8602 null warning** — Added null check for `ItemsSource` before accessing `.Count`
+- **StackScaleStep documentation** — Fixed XML doc that incorrectly stated default was 0.04 (actual: 0.03)
+
+## 1.0.1
+
+### Fixed
+
+- **GoBack card ordering** — Fixed ZIndex race condition where the restored card could appear behind the current top card
+- **GoBack item tracking** — Fixed off-by-one error in `_itemIndex` after GoBack, which caused the wrong next card to load
+
 ## 1.0.0
 
 ### Added
