@@ -300,8 +300,8 @@ public class SwipeCardView : ContentView, IDisposable
     }
 
     /// <summary>Gets or sets the initial scale of the back card (0.0–1.0). Scales up to 1.0 as the top card is dragged.
-    /// When <see cref="StackDepth"/> &gt; 1, this is the scale of the first back card; successive shadow cards
-    /// scale down further by <see cref="StackScaleStep"/> each. Default is 0.8.</summary>
+    /// Only used in non-stack mode (<see cref="StackDepth"/> = 0). In stack mode, card scaling is
+    /// controlled by <see cref="StackScaleStep"/> instead. Default is 0.8.</summary>
     public float BackCardScale
     {
         get => (float)GetValue(BackCardScaleProperty);
@@ -395,7 +395,7 @@ public class SwipeCardView : ContentView, IDisposable
 
         foreach (var shadow in _shadowCards)
         {
-            (shadow as IDisposable)?.Dispose();
+            // Border doesn't implement IDisposable; removal from Children is sufficient.
         }
         _shadowCards.Clear();
 
@@ -553,7 +553,10 @@ public class SwipeCardView : ContentView, IDisposable
         swipeCardView.Content = null;
 
         var view = new Grid() { IsClippedToBounds = false };
-        DisableNativeClipping(view);
+        if (swipeCardView.StackDepth > 0)
+        {
+            DisableNativeClipping(view);
+        }
 
         // create a stack of cards
         for (var i = NumCards - 1; i >= 0; i--)
@@ -606,6 +609,11 @@ public class SwipeCardView : ContentView, IDisposable
                     Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
                     card.IsVisible = false;
                 }
+            }
+            // Hide shadow cards too
+            foreach (var shadow in swipeCardView._shadowCards)
+            {
+                shadow.IsVisible = false;
             }
             swipeCardView.TopItem = null;
             swipeCardView.PreviousItem = null;
@@ -705,7 +713,7 @@ public class SwipeCardView : ContentView, IDisposable
             case NotifyCollectionChangedAction.Remove:
                 if (ItemsSource == null || ItemsSource.Count == 0)
                 {
-                    // All items removed — hide cards
+                    // All items removed — hide cards and shadow cards
                     foreach (var card in _cards)
                     {
                         if (card != null)
@@ -713,6 +721,10 @@ public class SwipeCardView : ContentView, IDisposable
                             Microsoft.Maui.Controls.ViewExtensions.CancelAnimations(card);
                             card.IsVisible = false;
                         }
+                    }
+                    foreach (var shadow in _shadowCards)
+                    {
+                        shadow.IsVisible = false;
                     }
                     _itemIndex = 0;
                     _currentDisplayIndex = 0;
@@ -815,7 +827,21 @@ public class SwipeCardView : ContentView, IDisposable
     {
         var swipeCardView = (SwipeCardView)bindable;
         swipeCardView.RebuildShadowCards();
-        swipeCardView.ApplyStackVisuals();
+
+        if (newValue is int depth && depth <= 0)
+        {
+            // Stack mode disabled — restore non-stack back card state (hidden)
+            var backCard = swipeCardView._cards[swipeCardView.PrevCardIndex(swipeCardView._topCardIndex)];
+            if (backCard != null)
+            {
+                backCard.Opacity = 0;
+                backCard.Scale = 1.0;
+            }
+        }
+        else
+        {
+            swipeCardView.ApplyStackVisuals();
+        }
         swipeCardView.PositionShadowCards();
     }
 
@@ -863,11 +889,18 @@ public class SwipeCardView : ContentView, IDisposable
         foreach (var shadow in _shadowCards)
         {
             grid.Children.Remove(shadow);
-            (shadow as IDisposable)?.Dispose();
         }
         _shadowCards.Clear();
 
-        if (StackDepth <= 0) return;
+        if (StackDepth <= 0)
+        {
+            grid.IsClippedToBounds = true;
+            return;
+        }
+
+        // Disable clipping so shadow cards can extend beyond bounds
+        grid.IsClippedToBounds = false;
+        DisableNativeClipping(grid);
 
         // Create shadow cards for all stack depths (deepest → shallowest) so they are
         // earliest in Children and render behind everything at the same ZIndex.
@@ -934,7 +967,7 @@ public class SwipeCardView : ContentView, IDisposable
         if (Content is not Grid grid) return;
         if (_shadowCards.Count == 0) return;
 
-        var hasItems = ItemsSource != null && ItemsSource.Count > 0;
+        var hasItems = ItemsSource != null && ItemsSource.Count >= 2;
 
         // Use the internal grid height (excludes SwipeCardView padding) for
         // more accurate compensation when element heights aren't available yet.
@@ -1031,28 +1064,6 @@ public class SwipeCardView : ContentView, IDisposable
         }
 
         PositionShadowCards();
-    }
-
-    /// <summary>Computes the TranslationY needed for a back card to peek by the desired offset.</summary>
-    /// <remarks>
-    /// With center-anchored scaling (AnchorY=0.5), a scaled card's edges retract by H*(1-Scale)/2.
-    /// For Bottom direction, we compensate the bottom retraction so the card peeks below.
-    /// For Top direction, we compensate the top retraction so the card peeks above.
-    /// </remarks>
-    private double ComputeStackTranslationY(View card, double scale, double peekAmount)
-    {
-        var height = card.Height;
-        if (height <= 0) height = Height; // fallback to container height
-        var compensation = height * (1.0 - scale) / 2.0;
-
-        if (StackDirection == Core.StackDirection.Top)
-        {
-            // Peek above: negative offset, subtract compensation (top edge retracts inward)
-            return -card.Y - peekAmount - compensation;
-        }
-
-        // Peek below: positive offset, add compensation (bottom edge retracts inward)
-        return -card.Y + peekAmount + compensation;
     }
 
     /// <summary>Applies visual transforms for the stack effect (called after layout pass).</summary>

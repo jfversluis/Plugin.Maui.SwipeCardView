@@ -192,11 +192,11 @@ Show stacked cards behind the top card to create the visual illusion of a deck. 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `StackDepth` | `int` | `0` | Number of cards visible behind the top card. `0` = off (backward compatible), `1` = back card visible, `2` = back card + 1 shadow, etc. |
-| `StackOffset` | `double` | `8` | Vertical offset (in dp) between each stacked card |
-| `StackScaleStep` | `double` | `0.02` | Scale reduction per successive card (e.g., 0.02 = each card 2% smaller). Set to `0` for uniform-width strips. |
+| `StackOffset` | `double` | `10` | Vertical offset (in dp) between each stacked card |
+| `StackScaleStep` | `double` | `0.03` | Scale reduction per successive card (e.g., 0.02 = each card 2% smaller). Set to `0` for uniform-width strips. |
 | `StackDirection` | `StackDirection` | `Bottom` | Direction stacked cards peek: `Bottom` (below top card) or `Top` (above top card) |
 
-The `BackCardScale` property controls the scale of the first back card. When `StackDepth` > 1, successive shadow cards scale down further by `StackScaleStep` each.
+In non-stack mode (`StackDepth` = 0), the `BackCardScale` property controls the initial scale of the back card during drag. In stack mode (`StackDepth` > 0), card scaling is driven by `StackScaleStep` for visual consistency across all strips.
 
 All stack properties can be changed at runtime and take effect immediately — no swipe action needed.
 
